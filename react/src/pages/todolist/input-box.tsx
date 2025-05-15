@@ -1,14 +1,13 @@
-/* eslint-disable no-empty-pattern */
 import "./todolist.scss";
-import { useTodoList } from "./hook/todoList.ts";
+import { useTodoList } from './hook/todoList';
 
 function InputForm() {
-  const {} = useTodoList();
+  const {inputValue, handleChange, handleBtn} = useTodoList();
 
   return (
     <div className="form_box">
-      <input type="text" className="input" />
-      <button className="add_btn">추가</button>
+      <input type="text" className="input" placeholder="내용을 작성해주세요." value={inputValue} onChange={handleChange} />
+      <button className="add_btn" onClick={handleBtn}>추가</button>
     </div>
   );
 }

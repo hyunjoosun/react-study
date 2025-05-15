@@ -1,0 +1,121 @@
+.container {
+    max-width: 500px;
+    margin: 0 auto;
+    background: #FFE6D8;
+    border-radius: 24px;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.quiz_main {
+    h2 {
+        font-size: 25px;
+        color: #fca7aa;
+    }
+
+    .img_box {
+        font-size: 0;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+
+    .start_btn {
+        margin-top: 20px;
+        width: 100%;
+        max-width: 260px;
+        background: #ffb6b9;
+        border-radius: 100px;
+        padding: 10px 30px;
+        color: #fff;
+        font-size: 16px;
+        font-weight: 700;
+    }
+}
+
+.quiz_form {
+    background: #fff;
+    padding: 40px;
+    border-radius: 10px;
+
+    .progress_box {
+        background: #ffebee;
+        border-radius: 10px;
+        overflow: hidden;
+        height: 12px;
+        margin-bottom: 30px;
+
+        .progress {
+            display: flex;
+            overflow: hidden;
+            line-height: 0;
+            font-size: .75rem;
+            border-radius: .25rem;
+            height: 100%;
+            background: linear-gradient(to right, #ffb6b9, #ffe082);
+            width: 50%;
+            transition: width 0.3s;
+        }
+    }
+
+    .title {
+        font-size: 19px;
+        margin-bottom: 20px;
+        color: #000;
+        line-height: 1.5;
+    }
+
+    .btn_box {
+        .btn {
+            width: 100%;
+            padding: 14px;
+            margin: 10px 0;
+            border: 2px solid #ffd9d2;
+            background: #fff6f8;
+            border-radius: 14px;
+            cursor: pointer;
+            font-size: 15px;
+            transition: 0.2s ease;
+            color: #444;
+        }
+    }
+}
+
+.quiz_complete {
+    .complete_box {
+        background: #ffffff;
+        border: 1px solid #fce4ec;
+        border-radius: 20px;
+        padding: 24px 16px;
+        margin-top: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+        i {
+            font-size: 48px;
+            font-style: normal;
+        }
+
+        strong {
+            display: inline;
+        }
+    }
+
+    .bottom_btn {
+        margin-top: 40px;
+
+        .btn {
+            font-size: 16px;
+            font-weight: bold;
+            width: 100%;
+            max-width: 260px;
+            padding: 12px 0;
+            background: #ffb6b9;
+            border: none;
+            color: white;
+            border-radius: 999px;
+
+            &+ .btn {
+                margin-top: 15px;
+            }
+        }
+    }
+}

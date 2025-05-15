@@ -1,11 +1,14 @@
 import "./todolist.scss";
+import { useTodoList } from './hook/todoList';
 
 function Item() {
+  const {inputBtn} = useTodoList();
+
   return (
     <div className="item_box complete">
       <div className="check_box">
         <input type="checkbox" className="check" />
-        <label className="txt">내용이 길어지면 내용이 길어지면 </label>
+        <label htmlFor="" className="txt">{inputBtn}</label>
       </div>
       <div className="btn_box">
         <button className="btn modify">수정</button>

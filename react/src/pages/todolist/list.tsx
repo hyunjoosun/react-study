@@ -4,6 +4,7 @@ import "./todolist.scss";
 function List() {
   return (
     <div className="list">
+      {}
       <ul>
         <li>
           <Item />
