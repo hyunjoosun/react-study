@@ -1,35 +1,39 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  useNavigate,
+} from "react-router-dom";
+import TodoList from "./pages/todolist/index";
+import Quiz from "./pages/quiz/index";
+import "./App.css";
 
-function App() {
-  const [count, setCount] = useState(0)
+const Home = () => {
+  const navigate = useNavigate();
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>현주1 Vite + React</h1>
+      <h1>React Study</h1>
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+        <button onClick={() => navigate("/todolist")}>Todo List</button>
+        <button onClick={() => navigate("/quiz")}>Quiz</button>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </>
-  )
+  );
+};
+
+function App() {
+  return (
+    <>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/todolist" element={<TodoList />} />
+          <Route path="/quiz" element={<Quiz />} />
+        </Routes>
+      </Router>
+    </>
+  );
 }
 
-export default App
+export default App;
