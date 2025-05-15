@@ -1,6 +1,10 @@
+/* eslint-disable no-empty-pattern */
 import "./todolist.scss";
+import { useTodoList } from "./hook/todoList.ts";
 
 function InputForm() {
+  const {} = useTodoList();
+
   return (
     <div className="form_box">
       <input type="text" className="input" />
