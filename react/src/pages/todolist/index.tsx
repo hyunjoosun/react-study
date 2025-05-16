@@ -12,6 +12,7 @@ function TodoList() {
     todoList,
     handleComplete,
     handleDelete,
+    handleModify,
   } = useTodoList();
   
   return (
@@ -19,7 +20,7 @@ function TodoList() {
       <h2>To do List</h2>
       <InputForm inputValue={inputValue} handleChange={handleChange} handleBtn={handleBtn}/>
       <BtnBox />
-      <List todoList={todoList} handleComplete={handleComplete} handleDelete={handleDelete}/>
+      <List todoList={todoList} handleComplete={handleComplete} handleDelete={handleDelete} handleModify={handleModify}/>
     </div>
   );
 }

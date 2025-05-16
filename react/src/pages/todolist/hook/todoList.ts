@@ -1,15 +1,9 @@
 import { useState } from "react";
 
-type todoItem = {
-  text : string;
-  done : boolean;
-  delete : boolean;
-}
-
 export function useTodoList() {
   //인풋창에 투두리스트 입력 + 추가 버튼 누르면 텍스트 노출
   const [inputValue,setInputValue] = useState('');
-  const [todoList,setTodoList] = useState<todoItem[]>([]);  
+  const [todoList,setTodoList] = useState<{ text: string; done: boolean }[]>([]);  
 
   const handleChange = (e:any) => {
     setInputValue(e.target.value);
@@ -20,13 +14,8 @@ export function useTodoList() {
       return;
     };
 
-    const newItem: todoItem = {
-      text : inputValue,
-      done : false,
-      delete : false,
-    }
-    
-    setTodoList([...todoList, newItem]);
+    const newList = [...todoList, { text: inputValue, done: false }];
+    setTodoList(newList);
     setInputValue('');
   };
 
@@ -54,6 +43,13 @@ export function useTodoList() {
     setTodoList(newList);
   };
 
+  const handleModify = (index : number, newText: string) => {
+    const newList = [...todoList];
+    newList[index].text = newText;
+    setTodoList(newList);
+  };
+
+
   return {
     inputValue,
     handleChange,
@@ -61,5 +57,6 @@ export function useTodoList() {
     todoList,
     handleComplete,
     handleDelete,
+    handleModify,
   };
 }
