@@ -72,6 +72,7 @@
     box-sizing: border-box;
     background: none;
     appearance: none;
+    flex-shrink: 0;
 
     &:checked {
       background: #004a98 url("../../assets/check_ic.svg") 50% no-repeat;
@@ -82,6 +83,7 @@
     font-size: 15px;
     color: #555;
     letter-spacing: -0.5px;
+    text-align: left;
   }
 }
 
@@ -111,7 +113,10 @@
     .btn_box {
       display: flex;
       align-items: center;
+      justify-content: flex-end;
       gap: 5px;
+      flex-shrink: 0;
+      width: 140px;
 
       .btn {
         padding: 5px 8px;

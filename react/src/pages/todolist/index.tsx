@@ -9,7 +9,9 @@ function TodoList() {
     inputValue,
     handleChange,
     handleBtn,
-    todoList
+    todoList,
+    handleComplete,
+    handleDelete,
   } = useTodoList();
   
   return (
@@ -17,7 +19,7 @@ function TodoList() {
       <h2>To do List</h2>
       <InputForm inputValue={inputValue} handleChange={handleChange} handleBtn={handleBtn}/>
       <BtnBox />
-      <List todoList={todoList}/>
+      <List todoList={todoList} handleComplete={handleComplete} handleDelete={handleDelete}/>
     </div>
   );
 }
