@@ -1,14 +1,19 @@
 import Item from "./item";
 import "./todolist.scss";
 
-function List() {
+type ListProps = {
+  todoList: string[];
+};
+
+function List({todoList} : ListProps) {
   return (
     <div className="list">
-      {}
       <ul>
-        <li>
-          <Item />
-        </li>
+        {todoList.map((todo, index) => (
+          <li key={index}>
+            <Item text={todo}/>
+          </li>
+        ))}
       </ul>
     </div>
   );

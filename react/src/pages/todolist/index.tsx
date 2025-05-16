@@ -5,14 +5,19 @@ import "./todolist.scss";
 import { useTodoList } from "./hook/todoList.ts";
 
 function TodoList() {
-  const {} = useTodoList();
+  const {
+    inputValue,
+    handleChange,
+    handleBtn,
+    todoList
+  } = useTodoList();
   
   return (
     <div className="container">
       <h2>To do List</h2>
-      <InputForm />
+      <InputForm inputValue={inputValue} handleChange={handleChange} handleBtn={handleBtn}/>
       <BtnBox />
-      <List />
+      <List todoList={todoList}/>
     </div>
   );
 }

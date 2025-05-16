@@ -1,14 +1,15 @@
 import "./todolist.scss";
-import { useTodoList } from './hook/todoList';
 
-function Item() {
-  const {inputBtn} = useTodoList();
+type TextProps = {
+  text : string;
+}
 
+function Item({text} : TextProps) {
   return (
     <div className="item_box complete">
       <div className="check_box">
         <input type="checkbox" className="check" />
-        <label htmlFor="" className="txt">{inputBtn}</label>
+        <label htmlFor="" className="txt">{text}</label>
       </div>
       <div className="btn_box">
         <button className="btn modify">수정</button>

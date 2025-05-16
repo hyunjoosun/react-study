@@ -4,14 +4,20 @@ import { useState } from "react";
 export function useTodoList() {
   //인풋창에 투두리스트 입력 + 추가 버튼 누르면 텍스트 노출
   const [inputValue,setInputValue] = useState('');
-  const [inputBtn,setInputBtn] = useState('');
+  const [todoList,setTodoList] = useState<string[]>([]);  
 
   const handleChange = (e:any) => {
     setInputValue(e.target.value);
   };
 
   const handleBtn = () => {
-    setInputBtn(inputValue);
+    if (inputValue === '') {
+      return;
+    };
+
+    const newList = [...todoList, inputValue];
+    
+    setTodoList(newList);
     setInputValue('');
   };
 
@@ -29,8 +35,8 @@ export function useTodoList() {
 
   return {
     inputValue,
-    inputBtn,
     handleChange,
-    handleBtn
+    handleBtn,
+    todoList
   };
 }

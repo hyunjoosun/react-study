@@ -8,7 +8,7 @@ function Quiz() {
   // const {} = useQuiz();
   
   return (
-    <div className="container">
+    <div className="container quiz">
       <QuizMain />
       <QuizForm />
       <QuizComplete />

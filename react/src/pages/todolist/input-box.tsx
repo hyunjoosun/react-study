@@ -1,9 +1,12 @@
 import "./todolist.scss";
-import { useTodoList } from './hook/todoList';
 
-function InputForm() {
-  const {inputValue, handleChange, handleBtn} = useTodoList();
+type InputProps = {
+  inputValue : string;
+  handleChange : (e:any) => void;
+  handleBtn : () => void;
+}
 
+function InputForm({inputValue, handleChange, handleBtn} : InputProps) {
   return (
     <div className="form_box">
       <input type="text" className="input" placeholder="내용을 작성해주세요." value={inputValue} onChange={handleChange} />
