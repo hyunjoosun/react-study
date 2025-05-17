@@ -2,14 +2,15 @@ import { useState } from "react";
 import "./todolist.scss";
 
 type ItemProps = {
-  item : {text : string, done : boolean};
+  item : {text : string, done : boolean, checked: boolean;};
   index : number;
   onComplete : (index : number) => void;
   onDelete : (index : number) => void;
   onModify : (index : number, newText: string) => void;
+  onChecked : (index : number, checked: boolean) => void;
 }
 
-function Item({item, index, onComplete, onDelete, onModify} : ItemProps) {
+function Item({item, index, onComplete, onDelete, onModify, onChecked} : ItemProps) {
   const [isEdit, setIsEdit] = useState(false);
   const [editValue, setEditValue] = useState(item.text);
   const handleEdit = () => {
@@ -30,7 +31,12 @@ function Item({item, index, onComplete, onDelete, onModify} : ItemProps) {
       <div className="check_box">
         {!isEdit ? (
           <>
-            <input type="checkbox" className="check" checked={item.done}/>
+            <input
+              type="checkbox"
+              className="check"
+              checked={item.checked}
+              onChange={(e) => onChecked(index, e.target.checked)}
+            />
             <label htmlFor="" className="txt">{item.text}</label>
           </>
         ) : (

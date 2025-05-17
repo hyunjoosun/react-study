@@ -3,33 +3,50 @@ import { useState } from "react";
 export function useTodoList() {
   //인풋창에 투두리스트 입력 + 추가 버튼 누르면 텍스트 노출
   const [inputValue,setInputValue] = useState('');
-  const [todoList,setTodoList] = useState<{ text: string; done: boolean }[]>([]);  
+  const [todoList,setTodoList] = useState<{ text: string; done: boolean; checked: boolean }[]>([]);
+  const [filter, setFilter] = useState<'all' | 'done' | 'undone'>('all');
 
   const handleChange = (e:any) => {
     setInputValue(e.target.value);
   };
 
   const handleBtn = () => {
-    if (inputValue === '') {
-      return;
-    };
-
-    const newList = [...todoList, { text: inputValue, done: false }];
+    if (inputValue === '') return;
+    const newList = [...todoList, { text: inputValue, done: false, checked: false }];
     setTodoList(newList);
     setInputValue('');
   };
-
-  //할 일 목록에 추가
-  // const [toList,setToList] = useState('');
+  
+  const handleChecked = (index: number, checked: boolean) => {
+    const newList = [...todoList];
+    newList[index].checked = checked;
+    setTodoList(newList);
+  };
 
   //전체선택
-  // const [selectAll,setSelectAll] = useState('');
+  const handleSelectAll = (isChecked: boolean) => {
+    const newList = todoList.map(item => ({
+      ...item,
+      checked: isChecked
+    }));
+    setTodoList(newList);
+  };
 
   //완료/미완료, 전체보기 필터링
-  // const [filter,setFilter] = useState('all');
+  const handleFilter = (type : 'all' | 'done' | 'undone') => {
+    setFilter(type);
+  };
 
   //선택 삭제
+  const handleSelectDelete = () => {
+    const newList = todoList.filter(item => !item.checked);
+    setTodoList(newList);
+  };
+
   //전체 삭제
+  const handleAllDelete = () => {
+    setTodoList([]);
+  };
 
   //아이템박스 수정, 완료, 삭제
   const handleComplete = (index:number) => {
@@ -58,5 +75,12 @@ export function useTodoList() {
     handleComplete,
     handleDelete,
     handleModify,
+    handleSelectAll,
+    handleFilter,
+    handleSelectDelete,
+    handleAllDelete,
+    filter,
+    setFilter,
+    handleChecked
   };
 }

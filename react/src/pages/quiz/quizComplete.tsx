@@ -1,20 +1,31 @@
 import "./quiz.scss";
-// import { useQuiz } from "./hook/quiz.ts";
 
-function QuizComplete() {
-//   const {} = useQuiz();
-  
+interface Props {
+  result: {
+    emoji: string;
+    label: string;
+  };
+  onRetry: () => void;
+  onConfirm: () => void;
+}
+
+function QuizComplete({ result, onRetry, onConfirm }: Props) {
   return (
     <div className="quiz_complete">
-        <div className="complete_box">
-            당신은 <br />
-            <i>😊</i><br />
-            <strong>천사</strong> 감정이 가장 많아요!
-        </div>
-        <div className="bottom_btn">
-            <button className="btn">다시하기</button>
-            <button className="btn">확인</button>
-        </div>
+      <div className="complete_box">
+        당신은 <br />
+        <i>{result.emoji}</i>
+        <br />
+        <strong>{result.label}</strong> 감정이 가장 많아요!
+      </div>
+      <div className="bottom_btn">
+        <button className="btn" onClick={onRetry}>
+          다시하기
+        </button>
+        <button className="btn" onClick={onConfirm}>
+          확인
+        </button>
+      </div>
     </div>
   );
 }

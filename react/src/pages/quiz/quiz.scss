@@ -76,6 +76,11 @@
             font-size: 15px;
             transition: 0.2s ease;
             color: #444;
+
+            &:hover {
+                background: #ffeef0;
+                border-color: #ffc9c2;
+              }
         }
     }
 }
