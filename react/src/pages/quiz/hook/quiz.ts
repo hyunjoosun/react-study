@@ -47,7 +47,15 @@ export function useQuiz() {
   };
 
   //결과 나오기 (천사/악마 이모티콘, 텍스트)
-  // const resultIcon = () => {};
+  const resultIcon = () => {
+    const count : {[key : string] : number} = {};
+    resultAnswer.forEach((r) => {
+      count[r] = (count[r] || 0) + 1;
+    });
+
+    const sorted = Object.entries(count).sort((a,b) => b[1] - a[1]);
+    return sorted[0]?.[0] || "모름";
+  };
 
   return {
     step,
@@ -56,6 +64,7 @@ export function useQuiz() {
     question,
     resultAnswer,
     selectAnswer,
-    restartQuiz
+    restartQuiz,
+    resultIcon,
   };
 }

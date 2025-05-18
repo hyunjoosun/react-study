@@ -27,7 +27,7 @@ function Quiz() {
       )}
       {quiz.step === "complete" && (
         <QuizComplete 
-          onRestart={quiz.restartQuiz} result={""} />
+          onRestart={quiz.restartQuiz} result={quiz.resultIcon()} />
       )}
     </div>
   );
