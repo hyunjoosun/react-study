@@ -1,28 +1,25 @@
 import "./quiz.scss";
 
-interface Props {
-  result: {
-    emoji: string;
-    label: string;
-  };
-  onRetry: () => void;
-  onConfirm: () => void;
-}
+type QuizCompleteProps = {
+  result: string;
+  onRestart: () => void;
+};
 
-function QuizComplete({ result, onRetry, onConfirm }: Props) {
+function QuizComplete({result, onRestart} : QuizCompleteProps) {
   return (
     <div className="quiz_complete">
       <div className="complete_box">
         당신은 <br />
-        <i>{result.emoji}</i>
+        {result === "천사" && <i>😊</i>}
+        {result === "화남" && <i>😠</i>}
         <br />
-        <strong>{result.label}</strong> 감정이 가장 많아요!
+        <strong>{result}</strong> 감정이 가장 많아요!
       </div>
       <div className="bottom_btn">
-        <button className="btn" onClick={onRetry}>
+        <button className="btn" onClick={onRestart}>
           다시하기
         </button>
-        <button className="btn" onClick={onConfirm}>
+        <button className="btn" onClick={() => (window.location.href = "/")}>
           확인
         </button>
       </div>

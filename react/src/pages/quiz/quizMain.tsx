@@ -1,7 +1,7 @@
 import "./quiz.scss";
 import img from "../../assets/quiz_main.png";
 
-function QuizMain({ onStart }: { onStart: () => void }) {
+function QuizMain({onStart} : {onStart : () => void}) {
   return (
     <div className="quiz_main">
       <h2>Quiz</h2>
