@@ -8,7 +8,7 @@ import TodoList from "./pages/todolist/index";
 import Quiz from "./pages/quiz/index";
 import "./App.css";
 
-const Home = () => {
+function Home() {
   const navigate = useNavigate();
 
   return (
@@ -20,19 +20,17 @@ const Home = () => {
       </div>
     </>
   );
-};
+}
 
 function App() {
   return (
-    <>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/todolist" element={<TodoList />} />
-          <Route path="/quiz" element={<Quiz />} />
-        </Routes>
-      </Router>
-    </>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/todolist" element={<TodoList />} />
+        <Route path="/quiz" element={<Quiz />} />
+      </Routes>
+    </Router>
   );
 }
 
