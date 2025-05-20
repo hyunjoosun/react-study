@@ -14,20 +14,33 @@ function TodoList() {
     handleDelete,
     handleModify,
     filter,
-    handleChecked
+    handleChecked,
+    handleSelectAll,
+    handleFilter,
+    handleSelectDelete,
+    handleAllDelete,
   } = useTodoList();
 
-  const filteredList = todoList.filter(item => {
-    if (filter === 'done') return item.done;
-    if (filter === 'undone') return !item.done;
+  const filteredList = todoList.filter((item) => {
+    if (filter === "done") return item.done;
+    if (filter === "undone") return !item.done;
     return true;
   });
-  
+
   return (
     <div className="container">
       <h2>To do List</h2>
-      <InputForm inputValue={inputValue} handleChange={handleChange} handleBtn={handleBtn}/>
-      <BtnBox />
+      <InputForm
+        inputValue={inputValue}
+        handleChange={handleChange}
+        handleBtn={handleBtn}
+      />
+      <BtnBox
+        handleSelectAll={handleSelectAll}
+        handleFilter={handleFilter}
+        handleSelectDelete={handleSelectDelete}
+        handleAllDelete={handleAllDelete}
+      />
       <List
         filteredList={filteredList}
         handleComplete={handleComplete}
