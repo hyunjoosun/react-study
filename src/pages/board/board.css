@@ -1,0 +1,59 @@
+.board_wrap .header {
+}
+
+.board_wrap .header h2 {
+  padding: 0 0 20px;
+  margin: 0;
+}
+
+.board_list ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.board_list li {
+  border-bottom: 1px solid #eee;
+}
+
+.board_list .top {
+  background: #eee;
+}
+
+.board_list .top p {
+  font-weight: 600;
+  color: #000 !important;
+}
+
+.board_list .link {
+  display: flex;
+  align-items: center;
+}
+
+.board_list .link p {
+  padding: 10px;
+  margin: 0;
+  flex-shrink: 0;
+  width: 100px;
+  box-sizing: border-box;
+  color: #666;
+}
+
+.board_list .link p:first-child {
+  width: auto;
+  flex-grow: 1;
+  text-align: left;
+  flex-shrink: inherit;
+}
+
+.board_list .link:hover p:first-child {
+  text-decoration: underline;
+}
+
+.board_list .top .link p:first-child {
+  text-align: center;
+}
+
+.board_list .top .link:hover p:first-child {
+  text-decoration: none;
+}

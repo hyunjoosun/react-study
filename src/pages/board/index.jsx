@@ -1,14 +1,38 @@
+import {
+  HashRouter as Router,
+  Routes,
+  Route,
+  useNavigate,
+} from "react-router-dom";
 import "./board.css";
-import BoardList from "./board-list"
+import BoardView from "./board-view";
+import BoardList from "./board-list";
 
 function Board() {
-  return <div className="board_wrap">
-    <div className="header">헤더</div>
-    <div className="board_list">
-      <BoardList />
+  const navigate = useNavigate();
+
+  return (
+    <div className="board_wrap">
+      <div className="header">
+        <h2>게시판</h2>
+      </div>
+      <div className="board_list">
+        <BoardList />
+      </div>
     </div>
-    <div className="footer">헤더</div>
-  </div>;
+  );
 }
 
-export default Board;
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <button onClick={() => navigate("/board/:id")}>
+          <BoardView />
+        </button>
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;
