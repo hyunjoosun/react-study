@@ -23,18 +23,20 @@ export default function BoardList() {
 
   return (
     <>
-      <ul>
-        <li className="top">
-          <div className="link">
-            <p>제목</p>
-            <p>아이디</p>
-            <p>사용자</p>
-          </div>
-        </li>
-        {data.map((article) => (
-          <BoardItem key={article.id} article={article} />
-        ))}
-      </ul>
+      <div className="board_list">
+        <ul>
+          <li className="top">
+            <div className="link">
+              <p>제목</p>
+              <p>아이디</p>
+              <p>사용자</p>
+            </div>
+          </li>
+          {data.map((article) => (
+            <BoardItem key={article.id} article={article} />
+          ))}
+        </ul>
+      </div>
     </>
   );
 }

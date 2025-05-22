@@ -8,6 +8,8 @@ import TodoList from "./pages/todolist/index";
 import Quiz from "./pages/quiz/index";
 import Board from "./pages/board/index";
 import "./App.css";
+import BoardView from "./pages/board/board-view";
+import BoardList from "./pages/board/board-list";
 
 function Home() {
   const navigate = useNavigate();
@@ -31,7 +33,10 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/todolist" element={<TodoList />} />
         <Route path="/quiz" element={<Quiz />} />
-        <Route path="/board" element={<Board />} />
+        <Route path="/board" element={<Board />}>
+          <Route index element={<BoardList />} />
+          <Route path=":id" element={<BoardView />} />
+        </Route>
       </Routes>
     </Router>
   );

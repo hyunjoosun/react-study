@@ -17,17 +17,16 @@ export default function BoardView({}) {
 
   if (!article) return <p>불러오는 중...</p>;
 
+  console.log(id);
+
   return (
     <div className="board_view">
-      <h2>게시글 상세</h2>
-      <div>
-        <strong>제목:</strong> {article.title}
+      <h3>{article.title}</h3>
+      <div className="name">
+      작성자 <strong>{article.userId}</strong> 
       </div>
-      <div>
-        <strong>작성자 ID:</strong> {article.userId}
-      </div>
-      <div>
-        <strong>내용:</strong> {article.body}
+      <div className="conts">
+        {article.body}
       </div>
     </div>
   );

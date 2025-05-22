@@ -28,6 +28,8 @@
 .board_list .link {
   display: flex;
   align-items: center;
+  width: 100%;
+  background: #fff;
 }
 
 .board_list .link p {
@@ -50,10 +52,36 @@
   text-decoration: underline;
 }
 
+.board_list .top .link {background: #eee;}
+
 .board_list .top .link p:first-child {
   text-align: center;
 }
 
 .board_list .top .link:hover p:first-child {
   text-decoration: none;
+}
+
+.board_view {
+  width: 100%;
+  height: calc(100vh - 120px);
+  border-top: 1px solid #eee;
+  border-bottom: 1px solid #eee;
+}
+
+.board_view h3 {
+  margin: 0;
+  padding: 10px;
+  background-color: #eee;
+}
+
+.board_view .name {
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+  text-align: left;
+}
+
+.board_view .conts {
+  text-align: left;
+  padding: 10px;
 }

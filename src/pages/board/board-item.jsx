@@ -7,15 +7,15 @@ export default function BoardItem({ article }) {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate(`/board/${id}`);
+    navigate(`/board/${article.id}`);
   };
 
   return (
     <li>
       <button onClick={handleClick} className="link">
-        <p>{title}</p>
-        <p>{id}</p>
-        <p>{userId}</p>
+        <p>{article.title}</p>
+        <p>{article.id}</p>
+        <p>{article.userId}</p>
       </button>
     </li>
   );
