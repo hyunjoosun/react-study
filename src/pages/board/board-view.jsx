@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import "./board.css";
+import Comment from "./comments/index";
 
 export default function BoardView({}) {
   const { id } = useParams();
@@ -23,10 +24,12 @@ export default function BoardView({}) {
     <div className="board_view">
       <h3>{article.title}</h3>
       <div className="name">
-      작성자 <strong>{article.userId}</strong> 
+        작성자 <strong>{article.userId}</strong>
       </div>
       <div className="conts">
         {article.body}
+
+        <Comment />
       </div>
     </div>
   );
