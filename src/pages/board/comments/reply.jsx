@@ -1,31 +1,29 @@
-import React from "react";
+import {useState} from "react";
 import "./comments.css";
 
-export default function Reply() {
+export default function Reply({boardUser, onSubmit}) {
+    const [reply, setReply] = useState("");
+
+    const handleSubmit = (e) => {
+        e.preventDefault;
+        if(!reply.trim()) return;
+
+        const newReply = {
+            userId : boardUser,
+            content : reply,
+        };
+
+        onSubmit(newReply);
+        setReply("");
+    };
+    
+
   return (
     <div className="reply_wrap">
-        <div className="reply_form">
-            <input type="text" className="input" placeholder="답글을 작성해 주세요."/>
+        <form className="reply_form" onSubmit={handleSubmit}>
+            <input type="text" className="input" placeholder="답글을 작성해 주세요." value={reply} onChange={(e) => setReply(e.target.value)}/>
             <button className="btn">작성</button>
-        </div>
-        <div className="comment_list">
-            <ul>
-                <li>
-                    <div className="comment_item">
-                        <div className="top">
-                            <div className="name">작성자</div>
-                            <div className="btn_box">
-                                <button className="btn">수정</button>
-                                <button className="btn">삭제</button>
-                            </div>
-                        </div>
-                        <div className="txt_box">
-                            답글 내용 나옴
-                        </div>
-                    </div>
-                </li>
-            </ul>
-        </div>
+        </form>
     </div>
   );
 }
