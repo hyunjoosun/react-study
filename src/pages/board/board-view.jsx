@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import "./board.css";
+import Login from "./login/login-form";
 import Comment from "./comments/index";
 
 export default function BoardView({}) {
@@ -29,7 +30,11 @@ export default function BoardView({}) {
       <div className="conts">
         {article.body}
 
-        <Comment />
+        <div className="comment_wrap">
+          <h4>댓글</h4>
+          <Login />
+          <Comment />
+        </div>
       </div>
     </div>
   );

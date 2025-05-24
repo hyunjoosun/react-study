@@ -1,13 +1,13 @@
 import React from "react";
+import CommentForm from "./comments-form";
+import CommentList from "./comments-list";
 import "./comments.css";
 
 export default function Comment() {
   return (
-    <div className="comment_wrap">
-      <form>
-        <textarea rows="5" cols="20" />
-        <button>작성</button>
-      </form>
+    <div className="comment_box">
+      <CommentForm />
+      <CommentList />
     </div>
   );
 }

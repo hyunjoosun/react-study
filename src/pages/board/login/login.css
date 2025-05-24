@@ -1,0 +1,26 @@
+.login_wrap form {
+    display: flex; 
+    width: 100%;
+    align-items: center; 
+    gap: 10px;
+}
+
+.login_wrap .input {
+    flex-grow: 1;
+    padding: 5px;
+    border-radius: 5px;
+    outline: none;
+    border: 1px solid #e6e6e6;
+    height: 34px;
+    box-sizing: border-box;
+} 
+
+.login_wrap button {
+    width: 60px;
+    border-radius: 5px;
+    height: 34px;
+    line-height: 34px;
+    box-sizing: border-box;
+    text-align: center;
+    flex-shrink: 0;
+}
