@@ -53,8 +53,31 @@ export default function BoardView({}) {
     setComments(updated);
   };
 
+  const handleEditComment = (idx, newContent) => {
+    const update = [...comments];
+    update[idx].content = newContent;
+    setComments(update);
+  }
 
-  console.log(id);
+  const handleDeleteComment = (idx) => {
+    const update = [...comments];
+    update.splice(idx, 1);
+    setComments(update);
+  }
+
+  const handleEditReply = (commentIdx, replyIdx, newContent) => {
+    const updated = [...comments];
+    updated[commentIdx].replies[replyIdx].content = newContent;
+    setComments(updated);
+  };
+  
+  const handleDeleteReply = (commentIdx, replyIdx) => {
+    const updated = [...comments];
+    updated[commentIdx].replies.splice(replyIdx, 1);
+    setComments(updated);
+  };
+
+  // console.log(id);
 
   return (
     <div className="board_view">
@@ -70,7 +93,16 @@ export default function BoardView({}) {
             <div className="comment_wrap">
               <h4>댓글</h4>
               <Login boardUser={boardUser} setBoardUser={setBoardUser} />
-              <Comment boardUser={boardUser} comments={comments} onAddComment={handleAddComment} handleAddReply={handleAddReply} />
+              <Comment
+                boardUser={boardUser}
+                comments={comments}
+                onAddComment={handleAddComment}
+                handleAddReply={handleAddReply}
+                onEditComment={handleEditComment}
+                onDeleteComment={handleDeleteComment}
+                onEditReply={handleEditReply}
+                onDeleteReply={handleDeleteReply}
+              />
             </div>
           </div>
         </>

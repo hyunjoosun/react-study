@@ -46,6 +46,10 @@
     list-style: none;
 }
 
+.comment_list li+ li {
+    margin-top: 10px;
+}
+
 .comment_list .top {
     display: flex;
     align-items: center;
@@ -82,13 +86,13 @@
     margin-top: 10px;
 }
 
-.reply_wrap .reply_form {
+.reply_form {
     display: flex;
     align-items: center;
     gap: 5px;
 }
 
-.reply_wrap .reply_form .input {
+.reply_form .input {
     flex-grow: 1;
     padding: 5px;
     border-radius: 5px;
@@ -98,7 +102,7 @@
     box-sizing: border-box;
 }
 
-.reply_wrap .reply_form button {
+.reply_form button {
     width: 60px;
     border-radius: 5px;
     height: 34px;
@@ -110,6 +114,12 @@
 
 .reply_wrap .comment_list {
     margin: 0;    
-    padding-left: 50px;
     border: 0;
+}
+
+.reply_wrap .comment_list li {
+    position: relative;
+    padding-left: 50px;
+    background: url('/public/reply_ic.png') left top no-repeat;
+    background-size: 20px;
 }

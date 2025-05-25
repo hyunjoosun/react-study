@@ -64,7 +64,7 @@
 
 .board_view {
   width: 100%;
-  height: calc(100vh - 120px);
+  min-height: calc(100vh - 120px);
   border-top: 1px solid #eee;
   border-bottom: 1px solid #eee;
 }
