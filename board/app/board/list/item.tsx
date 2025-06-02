@@ -53,12 +53,6 @@ export default function Items({
   onPageChange,
   totalPage,
 }: ItemProps) {
-  //   const { data: post, error } = await supabase.from("post").select("*");
-  //   console.log("게시판", post);
-
-  //   useEffect(() => {
-  //     getData();
-  //   }, []);
 
   const [posts, setPosts] = useState<PostTtpe[]>([]);
 
