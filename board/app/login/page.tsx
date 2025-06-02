@@ -11,6 +11,7 @@ import {
   Typography,
 } from "@mui/material";
 import React from "react";
+// import { supabase } from "../../src/lib/supabaseClient";
 // import { useRouter } from "next/router";
 // import { Box, CircularProgress } from "@mui/material";
 
