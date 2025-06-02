@@ -1,39 +1,40 @@
 "use client";
 
-import { Box, Button, Container, Pagination, Typography } from "@mui/material";
+import { Box, Button, Container, Typography } from "@mui/material";
 import React, { useState } from "react";
 import Category from "./list/category";
 import Items from "./list/item";
 
 export default function BoardPage() {
-  const [page, setPage] = useState(1);
+  const [category, setCategory] = useState<string>("all");
+  const [search, setSearch] = useState<string>("");
+  const [totalPage, setTotalPage] = useState<number>("");
 
-  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value);
+  const handleCategoryChange = (value: string) => {
+    setCategory(value);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearch(value);
   };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
         <Typography variant="h4">게시판</Typography>
-        <Button variant="contained" href="./write">
+        <Button variant="contained" href="../board/write">
           글쓰기
         </Button>
       </Box>
 
-      <Category />
+      <Category
+        category={category}
+        search={search}
+        onCategoryChange={onCategoryChange}
+      />
 
       <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-        <Items page={page} />
-      </Box>
-
-      <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
-        <Pagination
-          color="primary"
-          page={page}
-          count={5}
-          onChange={handlePageChange}
-        />
+        <Items category={category} search={search} />
       </Box>
     </Container>
   );

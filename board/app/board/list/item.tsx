@@ -8,6 +8,7 @@ import {
   Chip,
   Stack,
   Typography,
+  Pagination,
 } from "@mui/material";
 import React, { useEffect, useState } from "react";
 import {
@@ -32,9 +33,22 @@ type PostTtpe = {
     username: string;
   };
 };
+
+interface ItemProps {
+  page: number;
+  category: string;
+  search: string;
+  onTotalChange: (total: number) => void;
+}
+
 const ITEMS_PER_PAGE = 15;
 
-export default function Items({ page }: { page: number }) {
+export default function Items({
+  page,
+  category,
+  search,
+  onTotalChange,
+}: ItemProps) {
   //   const { data: post, error } = await supabase.from("post").select("*");
   //   console.log("게시판", post);
 
@@ -42,6 +56,7 @@ export default function Items({ page }: { page: number }) {
   //     getData();
   //   }, []);
 
+  const [page, setPage] = useState<number>(1);
   const [posts, setPosts] = useState<PostTtpe[]>([]);
 
   useEffect(() => {
@@ -49,9 +64,16 @@ export default function Items({ page }: { page: number }) {
       const from = (page - 1) * ITEMS_PER_PAGE;
       const to = from + ITEMS_PER_PAGE - 1;
 
-      const { data, error } = await supabase
-        .from("post")
-        .select("*, author:author_id(username)")
+      let query = supabase.from("post").select("*, author:author_id(username)");
+
+      if (category !== "all") {
+        query = query.eq("카테고리", category);
+      }
+      if (search) {
+        query = query.or("검색");
+      }
+
+      const { data, error, count } = await query
         .order("created_at", { ascending: false })
         .range(from, to);
 
@@ -63,10 +85,18 @@ export default function Items({ page }: { page: number }) {
       if (data) {
         setPosts(data as PostTtpe[]);
       }
+
+      if (count) {
+        onTotalChange(Math.ceil(count / ITEMS_PER_PAGE));
+      }
     };
 
     fetchPosts();
-  }, [page]);
+  }, [page, category, search, onTotalChange]);
+
+  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
+    setPage(value);
+  };
 
   return (
     <>
@@ -132,6 +162,10 @@ export default function Items({ page }: { page: number }) {
           </CardContent>
         </Card>
       ))}
+
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+        <Pagination color="primary" page={page} onChange={handlePageChange} />
+      </Box>
     </>
   );
 }
