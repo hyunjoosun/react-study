@@ -39,6 +39,8 @@ interface ItemProps {
   category: string;
   search: string;
   onTotalChange: (total: number) => void;
+  onPageChange: (page: number) => void;
+  totalPage: number; 
 }
 
 const ITEMS_PER_PAGE = 15;
@@ -48,6 +50,8 @@ export default function Items({
   category,
   search,
   onTotalChange,
+  onPageChange,
+  totalPage,
 }: ItemProps) {
   //   const { data: post, error } = await supabase.from("post").select("*");
   //   console.log("게시판", post);
@@ -56,7 +60,6 @@ export default function Items({
   //     getData();
   //   }, []);
 
-  const [page, setPage] = useState<number>(1);
   const [posts, setPosts] = useState<PostTtpe[]>([]);
 
   useEffect(() => {
@@ -64,13 +67,14 @@ export default function Items({
       const from = (page - 1) * ITEMS_PER_PAGE;
       const to = from + ITEMS_PER_PAGE - 1;
 
-      let query = supabase.from("post").select("*, author:author_id(username)");
+      let query = supabase.from("post").select("*, author:author_id(username)", { count: "exact" });
 
       if (category !== "all") {
-        query = query.eq("카테고리", category);
+        query = query.eq("category", category);
       }
+
       if (search) {
-        query = query.or("검색");
+        query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`);
       }
 
       const { data, error, count } = await query
@@ -93,10 +97,6 @@ export default function Items({
 
     fetchPosts();
   }, [page, category, search, onTotalChange]);
-
-  const handlePageChange = (_: React.ChangeEvent<unknown>, value: number) => {
-    setPage(value);
-  };
 
   return (
     <>
@@ -164,7 +164,7 @@ export default function Items({
       ))}
 
       <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
-        <Pagination color="primary" page={page} onChange={handlePageChange} />
+        <Pagination color="primary" page={page} count={totalPage} onChange={(_, value) => onPageChange(value)} />
       </Box>
     </>
   );

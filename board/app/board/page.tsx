@@ -8,7 +8,8 @@ import Items from "./list/item";
 export default function BoardPage() {
   const [category, setCategory] = useState<string>("all");
   const [search, setSearch] = useState<string>("");
-  const [totalPage, setTotalPage] = useState<number>("");
+  const [totalPage, setTotalPage] = useState<number>(1);
+  const [page, setPage] = useState<number>(1);
 
   const handleCategoryChange = (value: string) => {
     setCategory(value);
@@ -30,11 +31,12 @@ export default function BoardPage() {
       <Category
         category={category}
         search={search}
-        onCategoryChange={onCategoryChange}
+        onCategoryChange={handleCategoryChange}
+        onSearch={handleSearchChange}
       />
 
       <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-        <Items category={category} search={search} />
+        <Items category={category} search={search} onTotalChange={setTotalPage} page={page} onPageChange={setPage} totalPage={totalPage}/>
       </Box>
     </Container>
   );
