@@ -27,16 +27,15 @@ type PostType = {
   title: string;
   content: string;
   category: string;
-  author: string;
   created_at: string;
-  views: number;
-  comments: number;
-  likes: number;
+  view_count: number;
+  comment_count: number;
+  like_count: number;
   image_url?: string;
 };
 
 export default function PostDetailPage() {
-  const [posts, setPosts] = useState<PostType | null>(null);
+  const [post, setPost] = useState<PostType | null>(null);
   const [loading, setLoading] = useState(true);
   const params = useParams();
   const id = params?.id as string;
@@ -47,7 +46,7 @@ useEffect(() => {
     if (!id) return;
 
     const { data, error } = await supabase
-      .from("posts")
+      .from("post")
       .select("*")
       .eq("id", id)
       .single();
@@ -55,7 +54,7 @@ useEffect(() => {
     if (error) {
       console.log("에러:", error);
     } else {
-      setPosts(data);
+      setPost(data);
     }
 
     setLoading(false);
@@ -65,7 +64,7 @@ useEffect(() => {
 }, [id]);
 
   if (loading) return <Typography>불러오는 중...</Typography>;
-  if (!posts) return <Typography>게시글이 존재하지 않습니다.</Typography>;
+  if (!post) return <Typography>게시글이 존재하지 않습니다.</Typography>;
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -82,20 +81,20 @@ useEffect(() => {
             }}
           >
             <Typography variant="body2">
-              작성자: {post.author} | 작성일: {new Date(post.created_at).toLocaleDateString()}
+              작성일: {new Date(post.created_at).toLocaleDateString()}
             </Typography>
             <Stack direction="row" spacing={3}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                 <VisibilityIcon fontSize="small" />
-                <Typography variant="body2">{post.views}</Typography>
+                <Typography variant="body2">{post.view_count}</Typography>
               </Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                 <CommentIcon fontSize="small" />
-                <Typography variant="body2">{post.comments}</Typography>
+                <Typography variant="body2">{post.comment_count}</Typography>
               </Box>
               <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                 <FavoriteIcon fontSize="small" />
-                <Typography variant="body2">{post.likes}</Typography>
+                <Typography variant="body2">{post.like_count}</Typography>
               </Box>
             </Stack>
           </Box>
@@ -103,7 +102,7 @@ useEffect(() => {
 
         <Divider sx={{ my: 3 }} />
 
-        {posts.image_url && (
+        {post.image_url && (
           <Box sx={{ mb: 3, textAlign: "center" }}>
             <img
               src={post.image_url}

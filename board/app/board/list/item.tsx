@@ -16,7 +16,7 @@ import {
   Comment as CommentIcon,
   Favorite as FavoriteIcon,
 } from "@mui/icons-material";
-import { supabase } from "../../../src/lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 import { format } from "date-fns";
 
 type PostTtpe = {

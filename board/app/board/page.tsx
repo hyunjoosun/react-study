@@ -23,9 +23,14 @@ export default function BoardPage() {
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
         <Typography variant="h4">게시판</Typography>
-        <Button variant="contained" href="../board/write">
-          글쓰기
-        </Button>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Button variant="outlined" href="/users">
+            마이페이지
+          </Button>
+          <Button variant="contained" href="/board/write">
+            글쓰기
+          </Button> 
+        </Box>
       </Box>
 
       <Category
