@@ -12,36 +12,64 @@ import {
   Avatar,
   TextField,
   InputAdornment,
-  CircularProgress
+  CircularProgress,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Box,
 } from "@mui/material";
 import { Search as SearchIcon } from "@mui/icons-material";
 import { supabase } from "@/lib/supabaseClient";
+import { format } from "date-fns";
 
 type User = {
   id: string;
   email: string;
   username: string;
-}
+  avatar_url: string | null;
+  title: string;
+  created_at: string;
+  post_count: number;
+  comment_count: number;
+};
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [filtered, setFiltered] = useState<User[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+
+  const handleUserClick = (user: User) => {
+    setSelectedUser(user);
+  };
+
+  const handleClose = () => {
+    setSelectedUser(null);
+  };
 
   const fetchUsers = async () => {
     setLoading(true);
 
-    const { data, error } = await supabase
-      .from("users")
-      .select("id, email, username");
+    const { data, error } = await supabase.from("users").select(`
+        *,
+        post_count:post(count),
+        comment_count:comment(count)
+      `);
 
     if (error) {
       console.error("error", error);
       setUsers([]);
     } else {
-      setUsers(data);
-      setFiltered(data);
+      const usersWithCounts = data.map((user) => ({
+        ...user,
+        post_count: user.post_count || 0,
+        comment_count: user.comment_count || 0,
+      }));
+      setUsers(usersWithCounts);
+      setFiltered(usersWithCounts);
     }
 
     setLoading(false);
@@ -50,7 +78,6 @@ export default function UsersPage() {
   useEffect(() => {
     fetchUsers();
   }, []);
-
 
   useEffect(() => {
     const keyword = search.toLowerCase();
@@ -85,12 +112,15 @@ export default function UsersPage() {
         />
 
         {loading ? (
-          <CircularProgress />
+          <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
+            <CircularProgress />
+          </Box>
         ) : (
           <List>
             {filtered.map((user) => (
               <ListItem
                 key={user.id}
+                onClick={() => handleUserClick(user)}
                 sx={{
                   cursor: "pointer",
                   "&:hover": { backgroundColor: "action.hover" },
@@ -99,7 +129,7 @@ export default function UsersPage() {
                 }}
               >
                 <ListItemAvatar>
-                  <Avatar>
+                  <Avatar src={user.avatar_url || undefined}>
                     {user.username?.charAt(0) ?? "U"}
                   </Avatar>
                 </ListItemAvatar>
@@ -111,6 +141,52 @@ export default function UsersPage() {
             ))}
           </List>
         )}
+
+        <Dialog
+          open={Boolean(selectedUser)}
+          onClose={handleClose}
+          maxWidth="sm"
+          fullWidth
+        >
+          {selectedUser && (
+            <>
+              <DialogTitle>사용자 정보</DialogTitle>
+              <DialogContent>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+                  <Avatar
+                    src={selectedUser.avatar_url || undefined}
+                    alt={selectedUser.username}
+                    sx={{ width: 80, height: 80, mr: 3 }}
+                  />
+                  <Box>
+                    <Typography variant="h6">
+                      {selectedUser.username}
+                    </Typography>
+                    <Typography color="text.secondary">
+                      {selectedUser.email}
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body1" color="text.secondary">
+                    {selectedUser.title || "일반 사용자"}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    가입일:{" "}
+                    {format(
+                      new Date(selectedUser.created_at),
+                      "yyyy년 MM월 dd일"
+                    )}
+                  </Typography>
+                </Box>
+              </DialogContent>
+              <DialogActions>
+                <Button onClick={handleClose}>닫기</Button>
+              </DialogActions>
+            </>
+          )}
+        </Dialog>
       </Paper>
     </Container>
   );
