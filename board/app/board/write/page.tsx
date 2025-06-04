@@ -53,6 +53,9 @@ export default function WritePage() {
         method: "POST",
         body: formData,
       });
+
+      const result = await res.json();
+      console.log("응답 결과:", result);
   
       if (!res.ok) {
         throw new Error("등록 실패");

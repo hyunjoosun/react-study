@@ -27,9 +27,12 @@ export default function BoardPage() {
           <Button variant="outlined" href="/users">
             마이페이지
           </Button>
-          <Button variant="contained" href="/board/write">
+          <Button variant="outlined" href="/board/write">
             글쓰기
           </Button> 
+          <Button variant="contained" href="/login">
+            로그아웃
+          </Button>
         </Box>
       </Box>
 

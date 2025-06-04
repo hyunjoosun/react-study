@@ -92,9 +92,23 @@ export default function UsersPage() {
   return (
     <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
       <Paper elevation={3} sx={{ p: 4 }}>
-        <Typography variant="h4" gutterBottom>
+      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
+      <Typography variant="h4" gutterBottom>
           사용자 목록
         </Typography>
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Button variant="outlined" href="/board">
+            게시판
+          </Button>
+          <Button variant="outlined" href="/board/write">
+            글쓰기
+          </Button> 
+          <Button variant="contained" href="/login">
+            로그아웃
+          </Button>
+        </Box>
+      </Box>
+       
 
         <TextField
           fullWidth
