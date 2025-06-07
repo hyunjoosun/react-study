@@ -7,29 +7,37 @@ import {
   Container,
   Divider,
   Paper,
-  Stack,
   Typography,
 } from "@mui/material";
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams } from "next/navigation"; 
 import {
   List as ListIcon,
-  Visibility as VisibilityIcon,
-  Comment as CommentIcon,
-  Favorite as FavoriteIcon,
 } from "@mui/icons-material";
 import Comment from "./comment";
+import BoardTop from "../../board-top";
+import RightCount from "./right-count";
 import { usePostDetail } from "../../../hook/board";
+import { useUser } from '@supabase/auth-helpers-react';
 
 export default function PostDetailPage() {
   const params = useParams();
   const id = params?.id as string;
   const { post } = usePostDetail(id);
+  const user = useUser();
+
+  const userId = user?.id;
+
+  useEffect(() => {
+    console.log("userId:", user?.id);
+  }, [user]);
 
   if (!post) return <Typography>게시글이 존재하지 않습니다.</Typography>;
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <BoardTop />
+
       <Paper elevation={3} sx={{ p: 4 }}>
         <Box sx={{ mb: 3 }}>
           <Chip size="small" sx={{ mb: 2 }} label={post.category} />
@@ -45,20 +53,8 @@ export default function PostDetailPage() {
             <Typography variant="body2">
               작성일: {new Date(post.created_at).toLocaleDateString()}
             </Typography>
-            <Stack direction="row" spacing={3}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <VisibilityIcon fontSize="small" />
-                <Typography variant="body2">{post.view_count}</Typography>
-              </Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <CommentIcon fontSize="small" />
-                <Typography variant="body2">{post.comment_count}</Typography>
-              </Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                <FavoriteIcon fontSize="small" />
-                <Typography variant="body2">{post.like_count}</Typography>
-              </Box>
-            </Stack>
+
+            <RightCount post={post} userId={userId} />
           </Box>
         </Box>
 
