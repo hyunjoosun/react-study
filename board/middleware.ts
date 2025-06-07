@@ -14,5 +14,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/"], // 보호할 경로
+  matcher: ["/"],
 };
