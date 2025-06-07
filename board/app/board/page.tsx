@@ -7,10 +7,20 @@ import Category from "./list/category";
 import Items from "./list/item";
 
 export default function BoardPage() {
+  const [page, setPage] = useState<number>(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPage, setTotalPage] = useState<number>(1);
   const [category, setCategory] = useState<string>("all");
   const [search, setSearch] = useState<string>("");
-  const [totalPage, setTotalPage] = useState<number>(1);
-  const [page, setPage] = useState<number>(1);
+
+  const handleTotalChange = (count: number) => {
+    setTotalCount(count);
+    setTotalPage(Math.ceil(count / 10));
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -42,7 +52,14 @@ export default function BoardPage() {
       />
 
       <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-        <Items category={category} search={search} onTotalChange={setTotalPage} page={page} onPageChange={setPage} totalPage={totalPage}/>
+      <Items
+          page={page}
+          category={category}
+          search={search}
+          onTotalChange={handleTotalChange}
+          onPageChange={handlePageChange}
+          totalPage={totalPage}
+        />
       </Box>
     </Container>
   );

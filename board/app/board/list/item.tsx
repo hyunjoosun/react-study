@@ -10,29 +10,14 @@ import {
   Typography,
   Pagination,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Visibility as VisibilityIcon,
   Comment as CommentIcon,
   Favorite as FavoriteIcon,
 } from "@mui/icons-material";
-import { supabase } from "@/lib/supabaseClient";
 import { format } from "date-fns";
-
-type PostTtpe = {
-  id: string;
-  title: string;
-  content: string;
-  thumbnail_url: string;
-  view_count: number;
-  like_count: number;
-  comment_count: number;
-  created_at: string;
-  category: string;
-  author: {
-    username: string;
-  };
-};
+import { usePosts } from "../../hook/board";
 
 interface ItemProps {
   page: number;
@@ -40,10 +25,8 @@ interface ItemProps {
   search: string;
   onTotalChange: (total: number) => void;
   onPageChange: (page: number) => void;
-  totalPage: number; 
+  totalPage: number;
 }
-
-const ITEMS_PER_PAGE = 15;
 
 export default function Items({
   page,
@@ -53,45 +36,8 @@ export default function Items({
   onPageChange,
   totalPage,
 }: ItemProps) {
-
-  const [posts, setPosts] = useState<PostTtpe[]>([]);
-
-  useEffect(() => {
-    const fetchPosts = async () => {
-      const from = (page - 1) * ITEMS_PER_PAGE;
-      const to = from + ITEMS_PER_PAGE - 1;
-
-      let query = supabase.from("post").select("*, author:author_id(username)", { count: "exact" });
-
-      if (category !== "all") {
-        query = query.eq("category", category);
-      }
-
-      if (search) {
-        query = query.or(`title.ilike.%${search}%,content.ilike.%${search}%`);
-      }
-
-      const { data, error, count } = await query
-        .order("created_at", { ascending: false })
-        .range(from, to);
-
-      if (error) {
-        console.log("에러:", error);
-        return;
-      }
-
-      if (data) {
-        setPosts(data as PostTtpe[]);
-      }
-
-      if (count) {
-        onTotalChange(Math.ceil(count / ITEMS_PER_PAGE));
-      }
-    };
-
-    fetchPosts();
-  }, [page, category, search, onTotalChange]);
-
+  const posts = usePosts({ page, category, search, onTotalChange, onPageChange});
+  
   return (
     <>
       {posts.map((post) => (
@@ -158,7 +104,12 @@ export default function Items({
       ))}
 
       <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
-        <Pagination color="primary" page={page} count={totalPage} onChange={(_, value) => onPageChange(value)} />
+        <Pagination
+          color="primary"
+          page={page}
+          count={totalPage}
+          onChange={(_, value) => onPageChange(value)}
+        />
       </Box>
     </>
   );
