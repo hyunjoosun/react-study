@@ -17,14 +17,26 @@ interface CommentType {
   created_at: string;
 }
 
-export default function Comment() {
-  const currentUser = "username";
+interface CommentProps {
+  postId: string;
+}
+
+export default function Comment({ postId }: CommentProps) {
+  const [currentUser, setCurrentUser] = useState<string>("익명");
   const [comments, setComments] = useState<CommentType[]>([]);
   const [commentContent, setCommentContent] = useState<string>('');
   const [commentLoading, setCommentLoading] = useState<boolean>(false);
-
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState<string>("");
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("authUser");
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      setCurrentUser(user.username || "익명");
+    }
+    fetchComments();
+  }, [postId]);
 
   async function handleEditSubmit(commentId: string) {
     if (!editContent.trim()) return;
@@ -74,20 +86,17 @@ export default function Comment() {
 
   async function fetchComments() {
     const { data, error } = await supabase
-      .from('comment')
-      .select('*')
-      .order('created_at', { ascending: false });
+    .from('comment')
+    .select('*')
+    .eq('post_id', postId)
+    .order('created_at', { ascending: false });
 
-    if (error) {
-      console.error('댓글 불러오기 실패', error);
-    } else {
-      setComments(data);
-    }
+  if (error) {
+    console.error('댓글 불러오기 실패', error);
+  } else {
+    setComments(data);
   }
-
-  useEffect(() => {
-    fetchComments();
-  }, []);
+}
 
   async function handleCommentSubmit() {
     if (!commentContent.trim()) return;
@@ -96,7 +105,7 @@ export default function Comment() {
 
     const { data, error } = await supabase
       .from('comment')
-      .insert([{ content: commentContent, username: currentUser }])
+      .insert([{ content: commentContent, username: currentUser, post_id: postId }])
       .select();
 
     if (error) {

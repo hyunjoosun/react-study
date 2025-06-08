@@ -13,7 +13,7 @@ export type PostType = {
   id: string;
   title: string;
   content: string;
-  thumbnail_url: string;
+  thumbnail: string;
   view_count: number;
   like_count: number;
   comment_count: number;
@@ -49,39 +49,41 @@ export function usePosts({
     const fetchPosts = async () => {
       const from = (page - 1) * ITEMS_PER_PAGE;
       const to = from + ITEMS_PER_PAGE - 1;
-
+    
       let query = supabase
         .from("post")
-        .select("*, author:author_id(username)", { count: "exact" });
-
-    if (category && category !== "all") {
+        .select(`
+          *,
+          author:author_id(username),
+          comment(id)
+        `, { count: "exact" })
+        .order("created_at", { ascending: false })
+        .range(from, to);
+    
+      if (category && category !== "all") {
         query = query.eq("category", category);
       }
-
+    
       if (search) {
         query = query.ilike("title", `%${search}%`);
       }
-
-      const { data: postData, error, count } = await query.range(from, to);
-
+    
+      const { data: postData, error, count } = await query;
+    
       if (error) {
         console.error("게시글 불러오기 오류:", error.message);
         return;
       }
-
-      const { data: commentData } = await supabase
-        .from("comment")
-        .select("*");
-
+    
       const postsWithCount = (postData || []).map((post) => ({
         ...post,
-        comment_count:
-          commentData?.filter((c) => c.post_id === post.id).length || 0,
+        comment_count: post.comments?.length ?? 0,
       }));
-
+    
       setPosts(postsWithCount);
       onTotalChange?.(count || 0);
     };
+    
 
     fetchPosts();
   }, [page, category, search]);
@@ -151,54 +153,195 @@ export function useBoard({
   };
 }
 
-export function usePostDetail(id: string) {
+export function usePostDetail(postId: string, userId?: string) {
   const [post, setPost] = useState<PostType | null>(null);
   const [comments, setComments] = useState<CommentType[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!id) return;
-
+    const fetchPostDetail = async () => {
       try {
-        await supabase.rpc("increment_view_count", { post_id: id });
+        setLoading(true);
+        setError(null);
 
+        // 게시글 상세 정보 가져오기
         const { data: postData, error: postError } = await supabase
           .from("post")
-          .select("*")
-          .eq("id", id)
+          .select(`
+            *,
+            author:author_id(username)
+          `)
+          .eq("id", postId)
           .single();
 
-          if (postError) {
-            console.error("Post fetch error:", postError.message, postError);
-            throw postError;
-          }
+        if (postError) throw postError;
 
-        const { data: commentsData, error: commentsError } = await supabase
+        // 조회수 증가
+        const { error: updateError } = await supabase
+          .from("post")
+          .update({ view_count: (postData.view_count || 0) + 1 })
+          .eq("id", postId);
+
+        if (updateError) throw updateError;
+
+        // 댓글 목록 가져오기
+        const { data: commentData, error: commentError } = await supabase
           .from("comment")
           .select("*")
+          .eq("post_id", postId)
           .order("created_at", { ascending: true });
 
-          if (commentsError) {
-            console.error("Comments fetch error:", commentsError.message, commentsError);
-            throw commentsError;
-          }
+        if (commentError) throw commentError;
+
+        // 댓글 작성자 정보 가져오기
+        const commentAuthors = await Promise.all(
+          commentData.map(async (comment) => {
+            const { data: authorData } = await supabase
+              .from("user")
+              .select("username")
+              .eq("id", comment.author_id)
+              .single();
+            return {
+              ...comment,
+              author: authorData || { username: "Unknown" },
+            };
+          })
+        );
+
+        // 댓글 수 업데이트
+        const { error: countError } = await supabase
+          .from("post")
+          .update({ comment_count: commentAuthors.length })
+          .eq("id", postId);
+
+        if (countError) throw countError;
 
         setPost({
-            ...postData,
-            comment_count: (commentsData || []).length, 
-          });
-    
-          setComments(commentsData || []);
-        } catch (error: any) {
-          console.error("게시글 상세 데이터 불러오기 에러:", error?.message || error);
-        } finally {
-          setLoading(false);
-        }
+          ...postData,
+          comment_count: commentAuthors.length,
+        });
+        setComments(commentAuthors);
+      } catch (err) {
+        console.error("게시글 상세 정보 불러오기 오류:", err);
+        setError(err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPostDetail();
+  }, [postId]);
+
+  useEffect(() => {
+    if (!userId) {
+      setUsername(null);
+      return;
+    }
+
+    const fetchUsername = async () => {
+      const { data, error } = await supabase
+        .from("user")
+        .select("username")
+        .eq("id", userId)
+        .single();
+
+      if (error) {
+        console.error("유저 이름 가져오기 실패:", error);
+        setUsername(null);
+      } else {
+        setUsername(data?.username ?? null);
+      }
+    };
+
+    fetchUsername();
+  }, [userId]);
+
+  const addComment = async (content: string, userId: string) => {
+    try {
+      const { data: newComment, error: commentError } = await supabase
+        .from("comment")
+        .insert([
+          {
+            content,
+            post_id: postId,
+            author_id: userId,
+          },
+        ])
+        .select()
+        .single();
+
+      if (commentError) throw commentError;
+
+      // 작성자 정보 가져오기
+      const { data: authorData } = await supabase
+        .from("user")
+        .select("username")
+        .eq("id", userId)
+        .single();
+
+      const commentWithAuthor = {
+        ...newComment,
+        author: authorData || { username: "Unknown" },
       };
 
-    fetchData();
-  }, [id]);
+      // 댓글 목록 업데이트
+      setComments((prev) => [...prev, commentWithAuthor]);
 
-  return { post, comments, loading, setPost, setComments };
+      // 해당 게시글의 댓글 수만 업데이트
+      const { error: countError } = await supabase
+        .from("post")
+        .update({ comment_count: comments.length + 1 })
+        .eq("id", postId);
+
+      if (countError) throw countError;
+
+      // 현재 게시글의 댓글 수 업데이트
+      setPost((prev) => prev ? { ...prev, comment_count: prev.comment_count + 1 } : null);
+
+      return commentWithAuthor;
+    } catch (err) {
+      console.error("댓글 작성 오류:", err);
+      throw err;
+    }
+  };
+
+  const deleteComment = async (commentId: string) => {
+    try {
+      const { error: deleteError } = await supabase
+        .from("comment")
+        .delete()
+        .eq("id", commentId);
+
+      if (deleteError) throw deleteError;
+
+      // 댓글 목록에서 삭제
+      setComments((prev) => prev.filter((comment) => comment.id !== commentId));
+
+      // 해당 게시글의 댓글 수만 업데이트
+      const { error: countError } = await supabase
+        .from("post")
+        .update({ comment_count: comments.length - 1 })
+        .eq("id", postId);
+
+      if (countError) throw countError;
+
+      // 현재 게시글의 댓글 수 업데이트
+      setPost((prev) => prev ? { ...prev, comment_count: prev.comment_count - 1 } : null);
+    } catch (err) {
+      console.error("댓글 삭제 오류:", err);
+      throw err;
+    }
+  };
+
+  return {
+    post,
+    comments,
+    loading,
+    error,
+    username,
+    addComment,
+    deleteComment,
+  };
 }

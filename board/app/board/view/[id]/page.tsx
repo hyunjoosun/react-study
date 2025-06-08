@@ -23,10 +23,9 @@ import { useUser } from '@supabase/auth-helpers-react';
 export default function PostDetailPage() {
   const params = useParams();
   const id = params?.id as string;
-  const { post } = usePostDetail(id);
   const user = useUser();
-
   const userId = user?.id;
+  const { post, username, loading, error } = usePostDetail(id, userId);
 
   useEffect(() => {
     console.log("userId:", user?.id);
@@ -60,10 +59,10 @@ export default function PostDetailPage() {
 
         <Divider sx={{ my: 3 }} />
 
-        {post.thumbnail_url && (
+        {post.thumbnail && (
           <Box sx={{ mb: 3, textAlign: "center" }}>
             <img
-              src={post.thumbnail_url}
+              src={post.thumbnail}
               alt="게시글 이미지"
               style={{ maxWidth: "100%", height: "auto" }}
             />
@@ -76,7 +75,7 @@ export default function PostDetailPage() {
 
         <Divider sx={{ my: 3 }} />
 
-        <Comment />
+        <Comment postId={post.id}/>
 
         <Divider sx={{ my: 3 }} />
 
