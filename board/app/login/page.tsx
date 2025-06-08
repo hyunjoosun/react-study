@@ -13,8 +13,9 @@ import {
 import React, { useState } from "react";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
-import { useLogin } from "../hook/login";
 import { useForm, Controller } from "react-hook-form";
+import { loginWithEmailPassword } from "../hook/login";
+import { useAuth } from "../hook/auth";
 
 type FormValues = {
   email: string;
@@ -23,7 +24,7 @@ type FormValues = {
 
 export default function Login() {
   const router = useRouter();
-  const { login } = useLogin();
+  const { login: saveAuthUser } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
@@ -41,14 +42,11 @@ export default function Login() {
   const onSubmit = async (data: FormValues) => {
     setErrorMsg("");
 
-    console.log("폼 제출됨", data);
+    const user = await loginWithEmailPassword(data.email, data.password);
 
-    const success = await login(data.email, data.password);
-    console.log("로그인 성공 여부:", success);
-
-    if (success) {
-      console.log("로그인 성공! 페이지 이동합니다.");
-      window.location.href = "/board";
+    if (user) {
+      saveAuthUser(user);
+      router.push("/board");
     } else {
       setErrorMsg("이메일 또는 비밀번호가 올바르지 않습니다.");
     }
@@ -101,7 +99,7 @@ export default function Login() {
                   autoComplete="email"
                   autoFocus
                   error={!!errors.email}
-                  helperText={errors.email ? errors.email.message : ""}
+                  helperText={errors.email?.message}
                 />
               )}
             />
@@ -119,7 +117,7 @@ export default function Login() {
                   type={showPassword ? "text" : "password"}
                   autoComplete="current-password"
                   error={!!errors.password}
-                  helperText={errors.password ? errors.password.message : ""}
+                  helperText={errors.password?.message}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">

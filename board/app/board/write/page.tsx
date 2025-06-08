@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState } from "react";
 import {
   Box,
   Button,
@@ -12,8 +13,8 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
+import { useBoard } from "../../hook/board";
 
 type FormData = {
   category: string;
@@ -23,10 +24,17 @@ type FormData = {
 };
 
 export default function WritePage() {
-  const { 
-    control, 
-    handleSubmit, 
-    formState: { errors } 
+  const { categories } = useBoard({
+    category: "",
+    search: "",
+    onCategoryChange: () => {},
+    onSearch: () => {},
+  });
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
       category: "",
@@ -44,7 +52,7 @@ export default function WritePage() {
       formData.append("category", data.category);
       formData.append("title", data.title);
       formData.append("content", data.content);
-      
+  
       if (data.thumbnail && data.thumbnail.length > 0) {
         formData.append("thumbnail", data.thumbnail[0]);
       }
@@ -53,17 +61,18 @@ export default function WritePage() {
         method: "POST",
         body: formData,
       });
-
-      const result = await res.json();
-      console.log("응답 결과:", result);
   
       if (!res.ok) {
-        throw new Error("등록 실패");
+        const errorText = await res.text();
+        console.error("서버 응답 에러 (HTML 또는 기타):", errorText);
+        throw new Error(errorText || "등록 실패");
       }
+      
+  
+      const result = await res.json();
   
       alert("글이 성공적으로 등록되었습니다!");
       window.location.href = "/board";
-  
     } catch (err) {
       console.error("등록 중 에러:", err);
       alert("글 등록 중 오류가 발생했습니다.");
@@ -71,13 +80,15 @@ export default function WritePage() {
   };
   
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, onChange: (files: FileList | null) => void) => {
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    onChange: (files: FileList | null) => void
+  ) => {
     const files = e.target.files;
     onChange(files);
 
     if (files && files.length > 0) {
-      const file = files[0];
-      setPreview(URL.createObjectURL(file));
+      setPreview(URL.createObjectURL(files[0]));
     } else {
       setPreview(null);
     }
@@ -89,7 +100,8 @@ export default function WritePage() {
         <Typography variant="h4" gutterBottom>
           글쓰기
         </Typography>
-        <Box component="form" onSubmit={handleSubmit(onSubmit)}>
+
+        <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
           <FormControl fullWidth sx={{ mb: 2 }} error={!!errors.category}>
             <InputLabel id="category-label">카테고리</InputLabel>
             <Controller
@@ -101,11 +113,14 @@ export default function WritePage() {
                   {...field}
                   labelId="category-label"
                   label="카테고리"
+                  defaultValue=""
                 >
                   <MenuItem value="">카테고리 선택</MenuItem>
-                  <MenuItem value="general">일반</MenuItem>
-                  <MenuItem value="news">뉴스</MenuItem>
-                  <MenuItem value="event">이벤트</MenuItem>
+                  {categories.map((cat) => (
+                    <MenuItem key={cat} value={cat}>
+                      {cat}
+                    </MenuItem>
+                  ))}
                 </Select>
               )}
             />
@@ -167,20 +182,20 @@ export default function WritePage() {
                     썸네일 업로드
                   </Button>
                 </label>
-                <Box sx={{ mt: 2 }}>
-                  {preview && (
+                {preview && (
+                  <Box sx={{ mt: 2 }}>
                     <img
-                      alt="Thumbnail preview"
                       src={preview}
-                      style={{ maxWidth: "200px", maxHeight: "200px" }}
+                      alt="썸네일 미리보기"
+                      style={{ maxWidth: 200, maxHeight: 200 }}
                     />
-                  )}
-                </Box>
+                  </Box>
+                )}
               </Box>
             )}
           />
 
-          <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
+          <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
             <Button variant="outlined" href="/board">
               취소
             </Button>

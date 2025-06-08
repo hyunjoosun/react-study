@@ -1,18 +1,18 @@
-import { createClient } from "@supabase/supabase-js";
+import { supabaseServer } from "@/lib/server";
 import { NextRequest, NextResponse } from "next/server";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
-  const formData = await req.formData();
+  const supabase = supabaseServer;
 
+  const formData = await req.formData();
   const category = formData.get("category")?.toString() || "";
   const title = formData.get("title")?.toString() || "";
   const content = formData.get("content")?.toString() || "";
-  const thumbnailFile = formData.get("thumbnail") as File | null;
+
+  const thumbnailFileRaw = formData.get("thumbnail");
+  const thumbnailFile = thumbnailFileRaw instanceof File ? thumbnailFileRaw : null;
 
   if (!category || !title || !content) {
     return NextResponse.json({ error: "필수 항목 누락" }, { status: 400 });
@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
     const filePath = `thumbnails/${Date.now()}.${fileExt}`;
 
     const { data, error } = await supabase.storage
-      .from("thumbnail_url") // 스토리지 버킷 이름
+      .from("thumbnail")
       .upload(filePath, thumbnailFile, {
         contentType: thumbnailFile.type,
       });
@@ -37,18 +37,13 @@ export async function POST(req: NextRequest) {
 
     const {
       data: { publicUrl },
-    } = supabase.storage.from("thumbnail_url").getPublicUrl(filePath);
+    } = supabase.storage.from("thumbnail").getPublicUrl(filePath);
 
     thumbnailUrl = publicUrl;
   }
 
-  const { error: insertError } = await supabase.from("posts").insert([
-    {
-      category,
-      title,
-      content,
-      thumbnail: thumbnailUrl,
-    },
+  const { error: insertError } = await supabase.from("Post").insert([
+    { category, title, content, thumbnail: thumbnailUrl },
   ]);
 
   if (insertError) {
