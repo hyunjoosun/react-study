@@ -45,7 +45,7 @@ export default function Items({
           <CardMedia
             component="img"
             sx={{ width: 200 }}
-            image={post.thumbnail_url || "../../noimg.webp"}
+            image={post.thumbnail || "../../noimg.webp"}
             alt={post.title}
           />
           <CardContent

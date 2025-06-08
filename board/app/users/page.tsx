@@ -19,6 +19,12 @@ import {
   DialogActions,
   Button,
   Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
 } from "@mui/material";
 import { Search as SearchIcon } from "@mui/icons-material";
 import { supabase } from "@/lib/supabaseClient";
@@ -41,6 +47,7 @@ export default function UsersPage() {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleUserClick = (user: User) => {
     setSelectedUser(user);
@@ -51,28 +58,48 @@ export default function UsersPage() {
   };
 
   const fetchUsers = async () => {
-    setLoading(true);
+    try {
+      setLoading(true);
+      setError(null);
 
-    const { data, error } = await supabase.from("users").select(`
-        *,
-        post_count:post(count),
-        comment_count:comment(count)
-      `);
+      // 사용자 목록 가져오기
+      const { data: usersData, error: usersError } = await supabase
+        .from("users")
+        .select("*");
 
-    if (error) {
-      console.error("error", error);
-      setUsers([]);
-    } else {
-      const usersWithCounts = data.map((user) => ({
-        ...user,
-        post_count: user.post_count || 0,
-        comment_count: user.comment_count || 0,
-      }));
+      if (usersError) throw usersError;
+
+      // 각 사용자의 게시글 수와 댓글 수 가져오기
+      const usersWithCounts = await Promise.all(
+        usersData.map(async (user) => {
+          // 게시글 수 가져오기
+          const { count: postCount } = await supabase
+            .from("post")
+            .select("id", { count: "exact", head: true })
+            .eq("author_id", user.id);
+
+          // 댓글 수 가져오기
+          const { count: commentCount } = await supabase
+            .from("comment")
+            .select("id", { count: "exact", head: true })
+            .eq("author_id", user.id);
+
+          return {
+            ...user,
+            post_count: postCount || 0,
+            comment_count: commentCount || 0,
+          };
+        })
+      );
+
       setUsers(usersWithCounts);
       setFiltered(usersWithCounts);
+    } catch (err) {
+      console.error("사용자 목록 불러오기 오류:", err);
+      setError(err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -80,81 +107,77 @@ export default function UsersPage() {
   }, []);
 
   useEffect(() => {
-    const keyword = search.toLowerCase();
     const results = users.filter(
       (user) =>
-        user.username?.toLowerCase().includes(keyword) ||
-        user.email.toLowerCase().includes(keyword)
+        user.email.toLowerCase().includes(search.toLowerCase()) ||
+        user.username.toLowerCase().includes(search.toLowerCase())
     );
     setFiltered(results);
   }, [search, users]);
 
-  return (
-    <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-      <Typography variant="h4" gutterBottom>
-          사용자 목록
-        </Typography>
-        <Box sx={{ display: "flex", gap: 1 }}>
-          <Button variant="outlined" href="/board">
-            게시판
-          </Button>
-          <Button variant="outlined" href="/board/write">
-            글쓰기
-          </Button> 
-          <Button variant="contained" href="/login">
-            로그아웃
-          </Button>
-        </Box>
-      </Box>
-       
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
+  return (
+    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Paper elevation={3} sx={{ p: 4 }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
+          <Typography variant="h4" gutterBottom>
+            사용자 목록
+          </Typography>
+          <Box sx={{ display: "flex", gap: 1 }}>
+            <Button variant="outlined" href="/board">
+              게시판
+            </Button>
+            <Button variant="outlined" href="/board/write">
+              글쓰기
+            </Button> 
+            <Button variant="contained" href="/login">
+              로그아웃
+            </Button>
+          </Box>
+        </Box>
+       
         <TextField
           fullWidth
+          variant="outlined"
+          placeholder="이메일 또는 사용자명으로 검색"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="이름 또는 이메일로 검색"
           sx={{ mb: 3 }}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
         />
 
-        {loading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", p: 3 }}>
-            <CircularProgress />
-          </Box>
-        ) : (
-          <List>
-            {filtered.map((user) => (
-              <ListItem
-                key={user.id}
-                onClick={() => handleUserClick(user)}
-                sx={{
-                  cursor: "pointer",
-                  "&:hover": { backgroundColor: "action.hover" },
-                  borderRadius: 1,
-                  mb: 1,
-                }}
-              >
-                <ListItemAvatar>
-                  <Avatar src={user.avatar_url || undefined}>
-                    {user.username?.charAt(0) ?? "U"}
-                  </Avatar>
-                </ListItemAvatar>
-                <ListItemText
-                  primary={user.username || "이름 없음"}
-                  secondary={user.email}
-                />
-              </ListItem>
-            ))}
-          </List>
-        )}
+        <TableContainer component={Paper}>
+          <Table>
+            <TableHead>
+              <TableRow>
+                <TableCell>이메일</TableCell>
+                <TableCell>사용자명</TableCell>
+                <TableCell>가입일</TableCell>
+                <TableCell>게시글 수</TableCell>
+                <TableCell>댓글 수</TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {filtered.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{user.username}</TableCell>
+                  <TableCell>
+                    {new Date(user.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>{user.post_count}</TableCell>
+                  <TableCell>{user.comment_count}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
 
         <Dialog
           open={Boolean(selectedUser)}

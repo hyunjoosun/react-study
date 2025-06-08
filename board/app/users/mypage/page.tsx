@@ -45,7 +45,7 @@ export default function MyPage() {
         </Box>
 
         <Typography variant="body1" sx={{ mb: 1 }}>
-          직함: {userProfile.title}
+          {userProfile.title}
         </Typography>
         <Typography variant="body2" color="text.secondary">
           가입일: {format(new Date(userProfile.created_at), "yyyy년 MM월 dd일")}
