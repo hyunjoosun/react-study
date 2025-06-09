@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import { format } from "date-fns";
 import { AuthUser } from "../../hook/auth";
+import { supabase } from "@/lib/supabaseClient";
 
 interface ExtendedAuthUser extends AuthUser {
   nickname?: string;
@@ -26,44 +27,54 @@ export default function MyPage() {
 
   useEffect(() => {
     const storedUser = localStorage.getItem("authUser");
-    if (!storedUser) {
-      alert("로그인이 필요합니다.");
-      router.push("/login");
-      return;
+    if (storedUser) {
+      const user = JSON.parse(storedUser);
+      setUserProfile(user);
+      setNickname(user.nickname || "");
     }
+  }, []);
 
-    const user: ExtendedAuthUser = JSON.parse(storedUser);
-    setUserProfile(user);
-    setNickname(user.nickname || "");
-  }, [router]);
-
-  const handleLogout = () => {
-    localStorage.removeItem("authUser");
-    router.push("/login");
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      localStorage.removeItem("authUser");
+      router.push("/login");
+    } catch (err) {
+      console.error("로그아웃 중 오류 발생:", err);
+      alert("로그아웃 중 오류가 발생했습니다.");
+    }
   };
 
   const handleSaveNickname = async () => {
     if (!userProfile || !nickname.trim()) return;
 
     try {
-      // TODO: 실제 서버 API 호출하여 닉네임 업데이트
-      // const response = await fetch('/api/users/nickname', {
-      //   method: 'PUT',
-      //   body: JSON.stringify({ nickname }),
-      //   headers: { 'Content-Type': 'application/json' }
-      // });
+      const { error } = await supabase
+        .from('users')
+        .update({ nickname: nickname.trim() })
+        .eq('id', userProfile.id);
 
-      const updatedUser = { ...userProfile, nickname: nickname.trim() };
+      if (error) throw error;
+
+      const updatedUser: ExtendedAuthUser = {
+        ...userProfile,
+        nickname: nickname.trim()
+      };
+
+      localStorage.setItem('authUser', JSON.stringify(updatedUser));
       setUserProfile(updatedUser);
-      localStorage.setItem("authUser", JSON.stringify(updatedUser));
       setIsEditingNickname(false);
     } catch (error) {
-      console.error("닉네임 업데이트 실패:", error);
-      alert("닉네임 업데이트에 실패했습니다.");
+      console.error('닉네임 업데이트 실패:', error);
+      alert('닉네임 업데이트에 실패했습니다.');
     }
   };
 
-  if (!userProfile) return <p>로딩 중...</p>;
+  if (!userProfile) {
+    return <Typography>로딩 중...</Typography>;
+  }
 
   return (
     <Container maxWidth="sm" sx={{ mt: 4 }}>
