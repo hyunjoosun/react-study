@@ -26,12 +26,20 @@ export default function PostDetailPage() {
   const user = useUser();
   const userId = user?.id;
   const { post, username, loading, error } = usePostDetail(id, userId);
+  const [commentCount, setCommentCount] = React.useState(post?.comment_count || 0);
 
   useEffect(() => {
     console.log("userId:", user?.id);
-  }, [user]);
+    if (post) {
+      setCommentCount(post.comment_count);
+    }
+  }, [user, post]);
 
   if (!post) return <Typography>게시글이 존재하지 않습니다.</Typography>;
+
+  const handleCommentCountChange = (newCount: number) => {
+    setCommentCount(newCount);
+  };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -53,7 +61,7 @@ export default function PostDetailPage() {
               작성일: {new Date(post.created_at).toLocaleDateString()}
             </Typography>
 
-            <RightCount post={post} userId={userId} />
+            <RightCount post={{...post, comment_count: commentCount}} userId={userId} />
           </Box>
         </Box>
 
@@ -75,7 +83,7 @@ export default function PostDetailPage() {
 
         <Divider sx={{ my: 3 }} />
 
-        <Comment postId={post.id}/>
+        <Comment postId={post.id} onCommentCountChange={handleCommentCountChange}/>
 
         <Divider sx={{ my: 3 }} />
 

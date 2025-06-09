@@ -52,25 +52,23 @@ export default function WritePage() {
       formData.append("category", data.category);
       formData.append("title", data.title);
       formData.append("content", data.content);
-  
+
       if (data.thumbnail && data.thumbnail.length > 0) {
         formData.append("thumbnail", data.thumbnail[0]);
       }
-  
+
       const res = await fetch("/api/posts", {
         method: "POST",
         body: formData,
+        credentials: "include",
       });
-  
+
       if (!res.ok) {
         const errorText = await res.text();
         console.error("서버 응답 에러 (HTML 또는 기타):", errorText);
         throw new Error(errorText || "등록 실패");
       }
-      
-  
-      const result = await res.json();
-  
+
       alert("글이 성공적으로 등록되었습니다!");
       window.location.href = "/board";
     } catch (err) {
@@ -78,7 +76,6 @@ export default function WritePage() {
       alert("글 등록 중 오류가 발생했습니다.");
     }
   };
-  
 
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,

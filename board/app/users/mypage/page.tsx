@@ -14,10 +14,14 @@ import {
 import { format } from "date-fns";
 import { AuthUser } from "../../hook/auth";
 
+interface ExtendedAuthUser extends AuthUser {
+  nickname?: string;
+}
+
 export default function MyPage() {
-  const [userProfile, setUserProfile] = useState<AuthUser | null>(null);
-  const [isEditing, setIsEditing] = useState(false);
-  const [newUsername, setNewUsername] = useState("");
+  const [userProfile, setUserProfile] = useState<ExtendedAuthUser | null>(null);
+  const [isEditingNickname, setIsEditingNickname] = useState(false);
+  const [nickname, setNickname] = useState("");
   const router = useRouter();
 
   useEffect(() => {
@@ -28,56 +32,107 @@ export default function MyPage() {
       return;
     }
 
-    const user: AuthUser = JSON.parse(storedUser);
+    const user: ExtendedAuthUser = JSON.parse(storedUser);
     setUserProfile(user);
-    setNewUsername(user.username || "");
+    setNickname(user.nickname || "");
   }, [router]);
 
-  const handleSave = () => {
-    if (!userProfile) return;
+  const handleLogout = () => {
+    localStorage.removeItem("authUser");
+    router.push("/login");
+  };
 
-    const updatedUser = { ...userProfile, username: newUsername };
-    setUserProfile(updatedUser);
-    localStorage.setItem("authUser", JSON.stringify(updatedUser));
-    setIsEditing(false);
+  const handleSaveNickname = async () => {
+    if (!userProfile || !nickname.trim()) return;
+
+    try {
+      // TODO: 실제 서버 API 호출하여 닉네임 업데이트
+      // const response = await fetch('/api/users/nickname', {
+      //   method: 'PUT',
+      //   body: JSON.stringify({ nickname }),
+      //   headers: { 'Content-Type': 'application/json' }
+      // });
+
+      const updatedUser = { ...userProfile, nickname: nickname.trim() };
+      setUserProfile(updatedUser);
+      localStorage.setItem("authUser", JSON.stringify(updatedUser));
+      setIsEditingNickname(false);
+    } catch (error) {
+      console.error("닉네임 업데이트 실패:", error);
+      alert("닉네임 업데이트에 실패했습니다.");
+    }
   };
 
   if (!userProfile) return <p>로딩 중...</p>;
 
   return (
     <Container maxWidth="sm" sx={{ mt: 4 }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 3,
+        }}
+      >
+        <Typography variant="h4" component="h1">
+          마이페이지
+        </Typography>
+        <Button variant="outlined" color="error" onClick={handleLogout}>
+          로그아웃
+        </Button>
+      </Box>
       <Paper elevation={3} sx={{ p: 4 }}>
-        <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+        <Box sx={{ display: "flex", alignItems: "flex-start", mb: 3 }}>
           <Avatar sx={{ width: 80, height: 80, mr: 3 }}>
-            {userProfile.username?.charAt(0) ?? "U"}
+            {userProfile.nickname?.charAt(0) ??
+              userProfile.username?.charAt(0) ??
+              "U"}
           </Avatar>
           <Box>
-            {isEditing ? (
-              <>
+            <Typography variant="h5">{userProfile.username}</Typography>
+            <Typography color="text.secondary">{userProfile.email}</Typography>
+            
+            {isEditingNickname ? (
+              <Box sx={{ mt: 2 }}>
                 <TextField
-                  label="새 사용자 이름"
-                  value={newUsername}
-                  onChange={(e) => setNewUsername(e.target.value)}
+                  label="닉네임"
+                  value={nickname}
+                  onChange={(e) => setNickname(e.target.value)}
                   size="small"
-                  sx={{ mb: 1 }}
+                  sx={{ width: '200px', mb: 1 }}
+                  helperText="닉네임은 댓글 작성시 표시됩니다"
                 />
-                <Box>
-                  <Button variant="outlined" onClick={() => setIsEditing(false)} sx={{ mr: 1 }}>
+                <Box sx={{ mt: 1 }}>
+                  <Button
+                    variant="outlined"
+                    onClick={() => {
+                      setIsEditingNickname(false);
+                      setNickname(userProfile.nickname || "");
+                    }}
+                    sx={{ mr: 1 }}
+                    size="small"
+                  >
                     취소
                   </Button>
-                  <Button variant="contained" onClick={handleSave}>
+                  <Button variant="contained" onClick={handleSaveNickname} size="small">
                     저장
                   </Button>
                 </Box>
-              </>
+              </Box>
             ) : (
-              <>
-                <Typography variant="h5">{userProfile.username}</Typography>
-                <Typography color="text.secondary">{userProfile.email}</Typography>
-                <Button size="small" onClick={() => setIsEditing(true)} sx={{ mt: 1 }}>
-                  수정
+              <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography color="text.secondary">
+                  닉네임: {userProfile.nickname || "미설정"}
+                </Typography>
+                <Button
+                  size="small"
+                  onClick={() => setIsEditingNickname(true)}
+                  variant="outlined"
+                >
+                  {userProfile.nickname ? "수정" : "설정"}
                 </Button>
-              </>
+              </Box>
             )}
           </Box>
         </Box>
