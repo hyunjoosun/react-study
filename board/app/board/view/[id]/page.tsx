@@ -25,15 +25,14 @@ export default function PostDetailPage() {
   const id = params?.id as string;
   const user = useUser();
   const userId = user?.id;
-  const { post, username, loading, error } = usePostDetail(id, userId);
-  const [commentCount, setCommentCount] = React.useState(post?.comment_count || 0);
+  const { post, loading, error } = usePostDetail(id, userId);
+  const [commentCount, setCommentCount] = React.useState(0);
 
   useEffect(() => {
-    console.log("userId:", user?.id);
     if (post) {
-      setCommentCount(post.comment_count);
+      setCommentCount(post.comment_count || 0);
     }
-  }, [user, post]);
+  }, [post]);
 
   if (!post) return <Typography>게시글이 존재하지 않습니다.</Typography>;
 
@@ -83,7 +82,7 @@ export default function PostDetailPage() {
 
         <Divider sx={{ my: 3 }} />
 
-        <Comment postId={post.id} onCommentCountChange={handleCommentCountChange}/>
+        <Comment postId={post.id} onCommentCountChange={handleCommentCountChange} />
 
         <Divider sx={{ my: 3 }} />
 

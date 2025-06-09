@@ -19,9 +19,10 @@ interface CommentType {
 
 interface CommentProps {
   postId: string;
+  onCommentCountChange?: (count: number) => void;
 }
 
-export default function Comment({ postId }: CommentProps) {
+export default function Comment({ postId, onCommentCountChange }: CommentProps) {
   const [currentUser, setCurrentUser] = useState<string>("익명");
   const [comments, setComments] = useState<CommentType[]>([]);
   const [commentContent, setCommentContent] = useState<string>('');
@@ -70,52 +71,98 @@ export default function Comment({ postId }: CommentProps) {
 
     setCommentLoading(true);
 
-    const { error } = await supabase
-      .from('comment')
-      .delete()
-      .eq('id', commentId);
+    try {
+      const { error } = await supabase
+        .from('comment')
+        .delete()
+        .eq('id', commentId);
 
-    if (error) {
-      console.error("댓글 삭제 실패", error);
-    } else {
-      setComments((prev) => prev.filter((comment) => comment.id !== commentId));
+      if (error) {
+        console.error("댓글 삭제 실패", error);
+        return;
+      }
+
+      const newComments = comments.filter(comment => comment.id !== commentId);
+      setComments(newComments);
+
+      const { error: updateError } = await supabase
+        .from('post')
+        .update({ comment_count: newComments.length })
+        .eq('id', postId);
+
+      if (updateError) {
+        console.error('댓글 수 업데이트 실패:', updateError);
+      } else {
+        onCommentCountChange?.(newComments.length);
+      }
+    } catch (err) {
+      console.error('댓글 삭제 중 오류:', err);
+    } finally {
+      setCommentLoading(false);
     }
-
-    setCommentLoading(false);
   }
 
   async function fetchComments() {
     const { data, error } = await supabase
-    .from('comment')
-    .select('*')
-    .eq('post_id', postId)
-    .order('created_at', { ascending: false });
+      .from('comment')
+      .select('*')
+      .eq('post_id', postId)
+      .order('created_at', { ascending: false });
 
-  if (error) {
-    console.error('댓글 불러오기 실패', error);
-  } else {
-    setComments(data);
+    if (error) {
+      console.error('댓글 불러오기 실패', error);
+    } else {
+      setComments(data || []);
+      // Update comment count in post table
+      const { error: updateError } = await supabase
+        .from('post')
+        .update({ comment_count: data?.length || 0 })
+        .eq('id', postId);
+
+      if (updateError) {
+        console.error('댓글 수 업데이트 실패:', updateError);
+      } else {
+        onCommentCountChange?.(data?.length || 0);
+      }
+    }
   }
-}
 
   async function handleCommentSubmit() {
     if (!commentContent.trim()) return;
 
     setCommentLoading(true);
 
-    const { data, error } = await supabase
-      .from('comment')
-      .insert([{ content: commentContent, username: currentUser, post_id: postId }])
-      .select();
+    try {
+      const { data, error } = await supabase
+        .from('comment')
+        .insert([{ content: commentContent, username: currentUser, post_id: postId }])
+        .select();
 
-    if (error) {
-      console.error('댓글 등록 실패', error);
-    } else {
-      setComments((prev) => [data[0], ...prev]);
+      if (error) {
+        console.error('댓글 등록 실패', error);
+        return;
+      }
+
+      const newComments = [data[0], ...comments];
+      setComments(newComments);
       setCommentContent('');
-    }
 
-    setCommentLoading(false);
+      // Update comment count in post table
+      const { error: updateError } = await supabase
+        .from('post')
+        .update({ comment_count: newComments.length })
+        .eq('id', postId);
+
+      if (updateError) {
+        console.error('댓글 수 업데이트 실패:', updateError);
+      } else {
+        onCommentCountChange?.(newComments.length);
+      }
+    } catch (err) {
+      console.error('댓글 등록 중 오류:', err);
+    } finally {
+      setCommentLoading(false);
+    }
   }
 
   return (

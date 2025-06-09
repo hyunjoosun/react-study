@@ -78,11 +78,44 @@ export function usePosts({
         return;
       }
 
-      setPosts(postData || []);
+      const postsWithComments = await Promise.all(
+        (postData || []).map(async (post) => {
+          const { count: commentCount } = await supabase
+            .from("comment")
+            .select("*", { count: "exact", head: true })
+            .eq("post_id", post.id);
+
+          return {
+            ...post,
+            comment_count: commentCount || 0
+          };
+        })
+      );
+
+      setPosts(postsWithComments);
       onTotalChange?.(count || 0);
     };
 
     fetchPosts();
+
+    const commentSubscription = supabase
+      .channel('comment-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'comment'
+        },
+        () => {
+          fetchPosts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      commentSubscription.unsubscribe();
+    };
   }, [page, category, search, onTotalChange]);
 
   return posts;
@@ -174,7 +207,7 @@ export function usePostDetail(postId: string, userId?: string) {
 
         if (postError) throw postError;
 
-        // 조회수 증가 (SQL 함수 사용)
+        // 조회수 증가
         const { error: rpcError } = await supabase.rpc("increment_view_count", {
           post_id: postId,
         });
