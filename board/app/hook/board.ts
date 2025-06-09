@@ -87,7 +87,7 @@ export function usePosts({
 
           return {
             ...post,
-            comment_count: commentCount || 0
+            comment_count: commentCount || 0,
           };
         })
       );
@@ -99,13 +99,13 @@ export function usePosts({
     fetchPosts();
 
     const commentSubscription = supabase
-      .channel('comment-changes')
+      .channel("comment-changes")
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'comment'
+          event: "*",
+          schema: "public",
+          table: "comment",
         },
         () => {
           fetchPosts();
@@ -198,10 +198,12 @@ export function usePostDetail(postId: string, userId?: string) {
 
         const { data: postData, error: postError } = await supabase
           .from("post")
-          .select(`
+          .select(
+            `
             *,
             author:author_id(username, title)
-          `)
+          `
+          )
           .eq("id", postId)
           .single();
 
@@ -262,31 +264,28 @@ export function usePostDetail(postId: string, userId?: string) {
 
   useEffect(() => {
     if (!userId) {
-      console.log("userId가 없어요.");
       setUsername(null);
       return;
     }
-  
-    console.log("userId 확인:", userId);
-  
+
     const fetchUsername = async () => {
       const { data, error } = await supabase
         .from("users")
         .select("username")
         .eq("id", userId)
         .maybeSingle();
-  
-        if (error) {
-          console.error("유저 이름 가져오기 실패:", error.message);
-          setUsername(null);
-        } else if (!data) {
-          console.warn("해당 userId의 유저가 없습니다.");
-          setUsername(null);
-        } else {
-          setUsername(data.username);
-        }
+
+      if (error) {
+        console.error("유저 이름 가져오기 실패:", error.message);
+        setUsername(null);
+      } else if (!data) {
+        console.warn("해당 userId의 유저가 없습니다.");
+        setUsername(null);
+      } else {
+        setUsername(data.username);
+      }
     };
-  
+
     fetchUsername();
   }, [userId]);
 
