@@ -10,12 +10,11 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useState } from "react";
+import { useState } from "react";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useRouter } from "next/navigation";
 import { useForm, Controller } from "react-hook-form";
-import { loginWithEmailPassword } from "../hook/login";
-import { useAuth } from "../hook/auth";
+import { supabase } from "@/lib/supabaseClient";
 
 type FormValues = {
   email: string;
@@ -24,9 +23,8 @@ type FormValues = {
 
 export default function Login() {
   const router = useRouter();
-  const { login: saveAuthUser } = useAuth();
-  const [showPassword, setShowPassword] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const {
     control,
@@ -40,15 +38,20 @@ export default function Login() {
   });
 
   const onSubmit = async (data: FormValues) => {
-    setErrorMsg("");
+    setErrorMsg(null);
 
-    const user = await loginWithEmailPassword(data.email, data.password);
+    const { email, password } = data;
 
-    if (user) {
-      saveAuthUser(user);
-      router.push("/board");
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      setErrorMsg(error.message);
     } else {
-      setErrorMsg("이메일 또는 비밀번호가 올바르지 않습니다.");
+      setErrorMsg(null);
+      router.push("/board");
     }
   };
 
