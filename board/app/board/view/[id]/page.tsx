@@ -10,22 +10,20 @@ import {
   Typography,
 } from "@mui/material";
 import React, { useEffect } from "react";
-import { useParams } from "next/navigation"; 
-import {
-  List as ListIcon,
-} from "@mui/icons-material";
+import { useParams } from "next/navigation";
+import { List as ListIcon } from "@mui/icons-material";
 import Comment from "./comment";
 import BoardTop from "../../board-top";
 import RightCount from "./right-count";
 import { usePostDetail } from "../../../hook/board";
-import { useUser } from '@supabase/auth-helpers-react';
+import { useUser } from "@supabase/auth-helpers-react";
 
 export default function PostDetailPage() {
   const params = useParams();
   const id = params?.id as string;
   const user = useUser();
   const userId = user?.id;
-  const { post, loading, error } = usePostDetail(id, userId);
+  const { post } = usePostDetail(id, userId);
   const [commentCount, setCommentCount] = React.useState(0);
 
   useEffect(() => {
@@ -47,7 +45,9 @@ export default function PostDetailPage() {
       <Paper elevation={3} sx={{ p: 4 }}>
         <Box sx={{ mb: 3 }}>
           <Chip size="small" sx={{ mb: 2 }} label={post.category} />
-          <Typography variant="h4" gutterBottom>{post.title}</Typography>
+          <Typography variant="h4" gutterBottom>
+            {post.title}
+          </Typography>
           <Box
             sx={{
               display: "flex",
@@ -60,7 +60,10 @@ export default function PostDetailPage() {
               작성일: {new Date(post.created_at).toLocaleDateString()}
             </Typography>
 
-            <RightCount post={{...post, comment_count: commentCount}} userId={userId} />
+            <RightCount
+              post={{ ...post, comment_count: commentCount }}
+              userId={userId}
+            />
           </Box>
         </Box>
 
@@ -82,14 +85,17 @@ export default function PostDetailPage() {
 
         <Divider sx={{ my: 3 }} />
 
-        <Comment postId={post.id} onCommentCountChange={handleCommentCountChange} />
+        <Comment
+          postId={post.id}
+          onCommentCountChange={handleCommentCountChange}
+        />
 
         <Divider sx={{ my: 3 }} />
 
         <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
-        <Button variant="outlined" href={`/board/edit/${post.id}`}>
-          수정
-        </Button>
+          <Button variant="outlined" href={`/board/edit/${post.id}`}>
+            수정
+          </Button>
 
           <Button variant="contained" startIcon={<ListIcon />} href="/board">
             목록으로
