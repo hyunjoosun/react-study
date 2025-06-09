@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  Box,
-  Button,
-  Divider,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Divider, TextField, Typography } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -22,19 +16,24 @@ interface CommentProps {
   onCommentCountChange?: (count: number) => void;
 }
 
-export default function Comment({ postId, onCommentCountChange }: CommentProps) {
+export default function Comment({
+  postId,
+  onCommentCountChange,
+}: CommentProps) {
   const [currentUser, setCurrentUser] = useState<string>("익명");
   const [comments, setComments] = useState<CommentType[]>([]);
-  const [commentContent, setCommentContent] = useState<string>('');
+  const [commentContent, setCommentContent] = useState<string>("");
   const [commentLoading, setCommentLoading] = useState<boolean>(false);
   const [editingCommentId, setEditingCommentId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState<string>("");
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem("authUser");
     if (storedUser) {
       const user = JSON.parse(storedUser);
       setCurrentUser(user.username || "익명");
+      setUserId(user.id);
     }
     fetchComments();
   }, [postId]);
@@ -45,9 +44,9 @@ export default function Comment({ postId, onCommentCountChange }: CommentProps) 
     setCommentLoading(true);
 
     const { data, error } = await supabase
-      .from('comment')
+      .from("comment")
       .update({ content: editContent })
-      .eq('id', commentId)
+      .eq("id", commentId)
       .select();
 
     if (error) {
@@ -55,11 +54,13 @@ export default function Comment({ postId, onCommentCountChange }: CommentProps) 
     } else {
       setComments((prev) =>
         prev.map((comment) =>
-          comment.id === commentId ? { ...comment, content: editContent } : comment
+          comment.id === commentId
+            ? { ...comment, content: editContent }
+            : comment
         )
       );
       setEditingCommentId(null);
-      setEditContent('');
+      setEditContent("");
     }
 
     setCommentLoading(false);
@@ -73,30 +74,32 @@ export default function Comment({ postId, onCommentCountChange }: CommentProps) 
 
     try {
       const { error } = await supabase
-        .from('comment')
+        .from("comment")
         .delete()
-        .eq('id', commentId);
+        .eq("id", commentId);
 
       if (error) {
         console.error("댓글 삭제 실패", error);
         return;
       }
 
-      const newComments = comments.filter(comment => comment.id !== commentId);
+      const newComments = comments.filter(
+        (comment) => comment.id !== commentId
+      );
       setComments(newComments);
 
       const { error: updateError } = await supabase
-        .from('post')
+        .from("post")
         .update({ comment_count: newComments.length })
-        .eq('id', postId);
+        .eq("id", postId);
 
       if (updateError) {
-        console.error('댓글 수 업데이트 실패:', updateError);
+        console.error("댓글 수 업데이트 실패:", updateError);
       } else {
         onCommentCountChange?.(newComments.length);
       }
     } catch (err) {
-      console.error('댓글 삭제 중 오류:', err);
+      console.error("댓글 삭제 중 오류:", err);
     } finally {
       setCommentLoading(false);
     }
@@ -104,23 +107,22 @@ export default function Comment({ postId, onCommentCountChange }: CommentProps) 
 
   async function fetchComments() {
     const { data, error } = await supabase
-      .from('comment')
-      .select('*')
-      .eq('post_id', postId)
-      .order('created_at', { ascending: false });
+      .from("comment")
+      .select("*")
+      .eq("post_id", postId)
+      .order("created_at", { ascending: false });
 
     if (error) {
-      console.error('댓글 불러오기 실패', error);
+      console.error("댓글 불러오기 실패", error);
     } else {
       setComments(data || []);
-      // Update comment count in post table
       const { error: updateError } = await supabase
-        .from('post')
+        .from("post")
         .update({ comment_count: data?.length || 0 })
-        .eq('id', postId);
+        .eq("id", postId);
 
       if (updateError) {
-        console.error('댓글 수 업데이트 실패:', updateError);
+        console.error("댓글 수 업데이트 실패:", updateError);
       } else {
         onCommentCountChange?.(data?.length || 0);
       }
@@ -128,14 +130,19 @@ export default function Comment({ postId, onCommentCountChange }: CommentProps) 
   }
 
   async function handleCommentSubmit() {
-    if (!commentContent.trim()) return;
+    if (!commentContent.trim() || !userId) return;
 
     setCommentLoading(true);
 
     try {
       const { data, error } = await supabase
         .from('comment')
-        .insert([{ content: commentContent, username: currentUser, post_id: postId }])
+        .insert([{ 
+          content: commentContent, 
+          post_id: postId,
+          author_id: userId,
+          username: currentUser 
+        }])
         .select();
 
       if (error) {
@@ -172,12 +179,15 @@ export default function Comment({ postId, onCommentCountChange }: CommentProps) 
           댓글 ({comments.length})
         </Typography>
         {comments.length === 0 && (
-          <Typography color="text.secondary">등록된 댓글이 없습니다.</Typography>
+          <Typography color="text.secondary">
+            등록된 댓글이 없습니다.
+          </Typography>
         )}
         {comments.map((comment) => (
           <Box key={comment.id} sx={{ mb: 2, p: 1 }}>
             <Typography variant="subtitle2" color="text.secondary">
-              {comment.username} | {new Date(comment.created_at).toLocaleString()}
+              {comment.username} |{" "}
+              {new Date(comment.created_at).toLocaleString()}
             </Typography>
 
             {editingCommentId === comment.id ? (

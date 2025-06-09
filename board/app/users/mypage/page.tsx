@@ -17,6 +17,8 @@ import { supabase } from "@/lib/supabaseClient";
 
 interface ExtendedAuthUser extends AuthUser {
   nickname?: string;
+  post_count?: number;
+  comment_count?: number;
 }
 
 export default function MyPage() {
@@ -31,14 +33,41 @@ export default function MyPage() {
       const user = JSON.parse(storedUser);
       setUserProfile(user);
       setNickname(user.nickname || "");
+      fetchUserCounts(user.id);
     }
   }, []);
+
+  const fetchUserCounts = async (userId: string) => {
+    try {
+      const { count: postCount } = await supabase
+        .from("post")
+        .select("id", { count: "exact", head: true })
+        .eq("author_id", userId);
+
+      const { count: commentCount } = await supabase
+        .from("comment")
+        .select("id", { count: "exact", head: true })
+        .eq("author_id", userId);
+
+      setUserProfile((prev) =>
+        prev
+          ? {
+              ...prev,
+              post_count: postCount || 0,
+              comment_count: commentCount || 0,
+            }
+          : null
+      );
+    } catch (error) {
+      console.error("사용자 통계 조회 실패:", error);
+    }
+  };
 
   const handleLogout = async () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      
+
       localStorage.removeItem("authUser");
       router.push("/login");
     } catch (err) {
@@ -52,23 +81,23 @@ export default function MyPage() {
 
     try {
       const { error } = await supabase
-        .from('users')
+        .from("users")
         .update({ nickname: nickname.trim() })
-        .eq('id', userProfile.id);
+        .eq("id", userProfile.id);
 
       if (error) throw error;
 
       const updatedUser: ExtendedAuthUser = {
         ...userProfile,
-        nickname: nickname.trim()
+        nickname: nickname.trim(),
       };
 
-      localStorage.setItem('authUser', JSON.stringify(updatedUser));
+      localStorage.setItem("authUser", JSON.stringify(updatedUser));
       setUserProfile(updatedUser);
       setIsEditingNickname(false);
     } catch (error) {
-      console.error('닉네임 업데이트 실패:', error);
-      alert('닉네임 업데이트에 실패했습니다.');
+      console.error("닉네임 업데이트 실패:", error);
+      alert("닉네임 업데이트에 실패했습니다.");
     }
   };
 
@@ -103,7 +132,7 @@ export default function MyPage() {
           <Box>
             <Typography variant="h5">{userProfile.username}</Typography>
             <Typography color="text.secondary">{userProfile.email}</Typography>
-            
+
             {isEditingNickname ? (
               <Box sx={{ mt: 2 }}>
                 <TextField
@@ -111,7 +140,7 @@ export default function MyPage() {
                   value={nickname}
                   onChange={(e) => setNickname(e.target.value)}
                   size="small"
-                  sx={{ width: '200px', mb: 1 }}
+                  sx={{ width: "200px", mb: 1 }}
                   helperText="닉네임은 댓글 작성시 표시됩니다"
                 />
                 <Box sx={{ mt: 1 }}>
@@ -126,13 +155,19 @@ export default function MyPage() {
                   >
                     취소
                   </Button>
-                  <Button variant="contained" onClick={handleSaveNickname} size="small">
+                  <Button
+                    variant="contained"
+                    onClick={handleSaveNickname}
+                    size="small"
+                  >
                     저장
                   </Button>
                 </Box>
               </Box>
             ) : (
-              <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box
+                sx={{ mt: 1, display: "flex", alignItems: "center", gap: 1 }}
+              >
                 <Typography color="text.secondary">
                   닉네임: {userProfile.nickname || "미설정"}
                 </Typography>
@@ -146,6 +181,19 @@ export default function MyPage() {
               </Box>
             )}
           </Box>
+        </Box>
+
+        <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
+          <Paper sx={{ p: 2, flex: 1, textAlign: "center" }}>
+            <Typography variant="h6">{userProfile.post_count || 0}</Typography>
+            <Typography color="text.secondary">게시글</Typography>
+          </Paper>
+          <Paper sx={{ p: 2, flex: 1, textAlign: "center" }}>
+            <Typography variant="h6">
+              {userProfile.comment_count || 0}
+            </Typography>
+            <Typography color="text.secondary">댓글</Typography>
+          </Paper>
         </Box>
 
         <Typography variant="body1" sx={{ mb: 1 }}>

@@ -94,9 +94,14 @@ export default function WritePage() {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Paper elevation={3} sx={{ p: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          글쓰기
-        </Typography>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+          <Typography variant="h4" gutterBottom>
+            글쓰기
+          </Typography>
+          <Button variant="outlined" href="/board">
+            홈
+          </Button>
+        </Box>
 
         <Box component="form" onSubmit={handleSubmit(onSubmit)} noValidate>
           <FormControl fullWidth sx={{ mb: 2 }} error={!!errors.category}>
