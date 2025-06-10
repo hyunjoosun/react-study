@@ -5,7 +5,7 @@ export const runtime = "nodejs";
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = createSupabaseServerClient(req);
+    const supabase = createSupabaseServerClient();
 
     const {
       data: { user },
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { error: insertError } = await supabase.from("post").insert([
+    const { error: insertError } = await supabase.from("Post").insert([
       {
         category,
         title,

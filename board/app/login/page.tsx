@@ -42,7 +42,10 @@ export default function Login() {
 
     const { email, password } = data;
 
-    const { error } = await supabase.auth.signInWithPassword({
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -50,8 +53,11 @@ export default function Login() {
     if (error) {
       setErrorMsg(error.message);
     } else {
-      setErrorMsg(null);
-      router.push("/board");
+      setErrorMsg("이메일 또는 비밀번호가 올바르지 않습니다.");
+      if (session) {
+        alert("로그인 성공");
+        router.push("/board");
+      }
     }
   };
 

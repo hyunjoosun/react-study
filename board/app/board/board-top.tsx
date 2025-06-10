@@ -3,20 +3,30 @@
 import { Box, Button, Typography, IconButton } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import PeopleIcon from "@mui/icons-material/People";
-import { useRouter } from "next/navigation";
-import React from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabaseClient";
 
 export default function BoardTop() {
-  const router = useRouter();
-  const [isAdmin, setIsAdmin] = React.useState(false);
+  const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
-  React.useEffect(() => {
-    const authUser = localStorage.getItem("authUser");
-    if (authUser) {
-      const user = JSON.parse(authUser);
-      setIsAdmin(user.email === "admin@example.com");
-    }
+  useEffect(() => {
+    const fetchUser = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        setIsAdmin(user.email === "admin@example.com");
+      }
+    };
+
+    fetchUser();
   }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    window.location.reload();
+  };
 
   return (
     <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
@@ -44,13 +54,7 @@ export default function BoardTop() {
         <Button variant="outlined" href="/board/write">
           글쓰기
         </Button>
-        <Button
-          variant="outlined"
-          onClick={() => {
-            localStorage.removeItem("authUser");
-            router.push("/login");
-          }}
-        >
+        <Button variant="outlined" onClick={handleLogout}>
           로그아웃
         </Button>
       </Box>
