@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Box,
   Button,
@@ -14,7 +14,9 @@ import {
   Typography,
 } from "@mui/material";
 import { useForm, Controller } from "react-hook-form";
-import { useBoard } from "../../hook/board";
+import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
+import { useUser } from "@supabase/auth-helpers-react";
 
 type FormData = {
   category: string;
@@ -23,13 +25,12 @@ type FormData = {
   thumbnail: FileList | null;
 };
 
+const categories = ["공지사항", "정보", "일반", "질문"];
+
 export default function WritePage() {
-  const { categories } = useBoard({
-    category: "",
-    search: "",
-    onCategoryChange: () => {},
-    onSearch: () => {},
-  });
+  const router = useRouter();
+  const user = useUser();
+  const [preview, setPreview] = useState<string | null>(null);
 
   const {
     control,
@@ -44,57 +45,75 @@ export default function WritePage() {
     },
   });
 
-  const [preview, setPreview] = useState<string | null>(null);
-
-  const onSubmit = async (data: FormData) => {
-    try {
-      const formData = new FormData();
-      formData.append("category", data.category);
-      formData.append("title", data.title);
-      formData.append("content", data.content);
-
-      if (data.thumbnail && data.thumbnail.length > 0) {
-        formData.append("thumbnail", data.thumbnail[0]);
-      }
-
-      const res = await fetch("/api/posts", {
-        method: "POST",
-        body: formData,
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        const errorText = await res.text();
-        console.error("서버 응답 에러 (HTML 또는 기타):", errorText);
-        throw new Error(errorText || "등록 실패");
-      }
-
-      alert("글이 성공적으로 등록되었습니다!");
-      window.location.href = "/board";
-    } catch (err) {
-      console.error("등록 중 에러:", err);
-      alert("글 등록 중 오류가 발생했습니다.");
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    onChange: (value: FileList | null) => void
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      onChange(e.target.files);
+      setPreview(URL.createObjectURL(file));
+    } else {
+      onChange(null);
+      setPreview(null);
     }
   };
 
-  const handleFileChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    onChange: (files: FileList | null) => void
-  ) => {
-    const files = e.target.files;
-    onChange(files);
+  const onSubmit = async (data: FormData) => {
+    if (!user) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
 
-    if (files && files.length > 0) {
-      setPreview(URL.createObjectURL(files[0]));
+    let thumbnailUrl = null;
+
+    if (data.thumbnail && data.thumbnail.length > 0) {
+      const file = data.thumbnail[0];
+      const { data: storageData, error: uploadError } = await supabase.storage
+        .from("thumbnail")
+        .upload(`public/${Date.now()}-${file.name}`, file);
+
+      if (uploadError) {
+        console.error(uploadError);
+        alert("썸네일 업로드 중 오류가 발생했습니다.");
+        return;
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("thumbnail").getPublicUrl(storageData.path);
+
+      thumbnailUrl = publicUrl;
+    }
+
+    const { error } = await supabase.from("posts").insert({
+      title: data.title,
+      content: data.content,
+      category: data.category,
+      thumbnail: thumbnailUrl,
+      author_id: user.id,
+    });
+
+    if (error) {
+      console.error(error);
+      alert("글 등록 중 오류가 발생했습니다.");
     } else {
-      setPreview(null);
+      alert("글이 성공적으로 등록되었습니다.");
+      router.push("/board");
     }
   };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Paper elevation={3} sx={{ p: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 3,
+          }}
+        >
           <Typography variant="h4" gutterBottom>
             글쓰기
           </Typography>
@@ -111,16 +130,11 @@ export default function WritePage() {
               control={control}
               rules={{ required: "카테고리를 선택해주세요" }}
               render={({ field }) => (
-                <Select
-                  {...field}
-                  labelId="category-label"
-                  label="카테고리"
-                  defaultValue=""
-                >
+                <Select {...field} labelId="category-label" label="카테고리">
                   <MenuItem value="">카테고리 선택</MenuItem>
-                  {categories.map((cat) => (
-                    <MenuItem key={cat} value={cat}>
-                      {cat}
+                  {categories.map((category) => (
+                    <MenuItem key={category} value={category}>
+                      {category}
                     </MenuItem>
                   ))}
                 </Select>
@@ -191,6 +205,17 @@ export default function WritePage() {
                       alt="썸네일 미리보기"
                       style={{ maxWidth: 200, maxHeight: 200 }}
                     />
+                    <Button
+                      variant="text"
+                      color="error"
+                      sx={{ mt: 1 }}
+                      onClick={() => {
+                        onChange(null);
+                        setPreview(null);
+                      }}
+                    >
+                      썸네일 삭제
+                    </Button>
                   </Box>
                 )}
               </Box>
