@@ -19,6 +19,13 @@ import {
 import { format } from "date-fns";
 import { supabase } from "@/lib/supabaseClient";
 
+interface ItemsProps {
+  category: string;
+  keyword: string;
+  page: number;
+  onPageChange: (page: number) => void;
+}
+
 interface PostProps {
   id: number;
   title: string;
@@ -26,6 +33,9 @@ interface PostProps {
   thumbnail?: string;
   category?: string;
   created_at: string;
+  view_count: number;
+  comment_count: number;
+  like_count: number;
   author_id: string;
   profiles: {
     username: string;
@@ -33,19 +43,24 @@ interface PostProps {
   };
 }
 
-export default function Items() {
+export default function Items({
+  category,
+  keyword,
+  page,
+  onPageChange,
+}: ItemsProps) {
   const [posts, setPosts] = useState<PostProps[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [page, setPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(0);
   const ITEMS_PER_PAGE = 10;
 
   useEffect(() => {
     const fetchPosts = async () => {
+      setLoading(true);
       const from = (page - 1) * ITEMS_PER_PAGE;
       const to = from + ITEMS_PER_PAGE - 1;
 
-      const { data, count, error } = await supabase
+      let query = supabase
         .from("posts")
         .select(
           `
@@ -54,8 +69,12 @@ export default function Items() {
           `,
           { count: "exact" }
         )
-        .order("created_at", { ascending: false })
-        .range(from, to);
+        .order("created_at", { ascending: false });
+
+      if (category !== "all") query = query.eq("category", category);
+      if (keyword) query = query.ilike("title", `%${keyword}%`);
+
+      const { data, count, error } = await query.range(from, to);
 
       if (error) {
         console.error("에러:", error.message);
@@ -67,7 +86,7 @@ export default function Items() {
     };
 
     fetchPosts();
-  }, [page]);
+  }, [category, keyword, page]);
 
   if (loading) {
     return <Typography>로딩중</Typography>;
@@ -122,20 +141,20 @@ export default function Items() {
               <Stack direction="row" spacing={2} sx={{ mt: 1 }}>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                   <VisibilityIcon fontSize="small" color="action" />
-                  <Typography variant="body2" color="text.secondary">
-                    0
+                  <Typography variant="body2">
+                    {post.view_count ?? 0}
                   </Typography>
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                   <CommentIcon fontSize="small" color="action" />
-                  <Typography variant="body2" color="text.secondary">
-                    0
+                  <Typography variant="body2">
+                    {post.comment_count ?? 0}
                   </Typography>
                 </Box>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                   <FavoriteIcon fontSize="small" color="action" />
-                  <Typography variant="body2" color="text.secondary">
-                    0
+                  <Typography variant="body2">
+                    {post.like_count ?? 0}
                   </Typography>
                 </Box>
               </Stack>
@@ -151,7 +170,7 @@ export default function Items() {
           color="primary"
           showFirstButton
           showLastButton
-          onChange={(_, value) => setPage(value)}
+          onChange={(_, value) => onPageChange(value)}
         />
       </Box>
     </>

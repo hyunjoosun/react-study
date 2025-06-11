@@ -14,10 +14,22 @@ import { Search as SearchIcon } from "@mui/icons-material";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
-export default function Category() {
+interface CategoryProps {
+  category: string;
+  search: string;
+  onCategoryChange: (value: string) => void;
+  onSearch: (value: string) => void;
+}
+
+export default function Category({
+  category,
+  search,
+  onCategoryChange,
+  onSearch,
+}: CategoryProps) {
   const [categories, setCategories] = useState<string[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [inputValue, setInputValue] = useState<string>("");
+  const [inputValue, setInputValue] = useState<string>(search);
+  const [selectedCategory, setSelectedCategory] = useState(category);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -46,10 +58,16 @@ export default function Category() {
     setInputValue(event.target.value);
   };
 
-  const handleSearchClick = () => {
-    console.log("선택된 카테고리:", selectedCategory);
-    console.log("검색어:", inputValue);
+  const handleSearch = () => {
+    onCategoryChange(selectedCategory);
+    onSearch(inputValue);
   };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") handleSearch();
+  };
+
+  const handleSearchClick = () => handleSearch();
 
   return (
     <Box sx={{ mb: 3, display: "flex", gap: 2 }}>
@@ -74,6 +92,7 @@ export default function Category() {
         placeholder="검색어를 입력하세요"
         value={inputValue}
         onChange={handleInputChange}
+        onKeyDown={handleKeyDown}
         InputProps={{
           endAdornment: (
             <IconButton onClick={handleSearchClick} edge="end">
