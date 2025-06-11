@@ -53,7 +53,6 @@ export default function Login() {
     if (error) {
       setErrorMsg(error.message);
     } else {
-      setErrorMsg("이메일 또는 비밀번호가 올바르지 않습니다.");
       if (session) {
         alert("로그인 성공");
         router.push("/board");

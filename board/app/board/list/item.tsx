@@ -69,7 +69,8 @@ export default function Items({
           `,
           { count: "exact" }
         )
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false });
 
       if (category !== "all") query = query.eq("category", category);
       if (keyword) query = query.ilike("title", `%${keyword}%`);
