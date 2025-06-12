@@ -69,9 +69,15 @@ export default function WritePage() {
 
     if (data.thumbnail && data.thumbnail.length > 0) {
       const file = data.thumbnail[0];
+      const safeFileName = file.name
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^\w.-]/g, "_");
+      const filePath = `public/${Date.now()}-${safeFileName}`;
+
       const { data: storageData, error: uploadError } = await supabase.storage
         .from("thumbnail")
-        .upload(`public/${Date.now()}-${file.name}`, file);
+        .upload(filePath, file);
 
       if (uploadError) {
         console.error(uploadError);
