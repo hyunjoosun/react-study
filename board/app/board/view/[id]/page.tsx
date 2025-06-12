@@ -33,6 +33,7 @@ type Post = {
 
 export default function PostDetailPage() {
   const { id } = useParams();
+  const numId = Number(id);
   const [post, setPost] = useState<Post | null>(null);
   const [username, setUsername] = useState<string | null>(null);
   const [commentCount, setCommentCount] = useState<number>(0);
@@ -45,7 +46,7 @@ export default function PostDetailPage() {
       const { data, error } = await supabase
         .from("posts")
         .select("*")
-        .eq("id", id)
+        .eq("id", numId)
         .single();
 
       if (error) {
@@ -70,7 +71,7 @@ export default function PostDetailPage() {
       await supabase
         .from("posts")
         .update({ view_count: (data.view_count || 0) + 1 })
-        .eq("id", id);
+        .eq("id", numId);
     };
 
     fetchPostDetail();
@@ -132,7 +133,7 @@ export default function PostDetailPage() {
         <Divider sx={{ my: 3 }} />
 
         <Comment
-          postId={post.id}
+          postId={numId}
           commentCount={commentCount}
           onCommentCountChange={handleCommentCountChange}
         />
