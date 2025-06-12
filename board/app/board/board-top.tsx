@@ -5,8 +5,10 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import PeopleIcon from "@mui/icons-material/People";
 import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { useRouter } from "next/navigation";
 
 export default function BoardTop() {
+  const router = useRouter();
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
 
   useEffect(() => {
@@ -25,7 +27,7 @@ export default function BoardTop() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    window.location.reload();
+    router.push("/login");
   };
 
   return (

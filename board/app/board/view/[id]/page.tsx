@@ -141,9 +141,11 @@ export default function PostDetailPage() {
         <Divider sx={{ my: 3 }} />
 
         <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
-          <Button variant="outlined" href={`/board/edit/${post.id}`}>
-            수정
-          </Button>
+          {user?.id === post.author_id && (
+            <Button variant="outlined" href={`/board/edit/${post.id}`}>
+              수정
+            </Button>
+          )}
 
           <Button variant="contained" startIcon={<ListIcon />} href="/board">
             목록으로
