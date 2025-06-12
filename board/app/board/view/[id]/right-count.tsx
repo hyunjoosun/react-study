@@ -1,58 +1,83 @@
 "use client";
 
-import {
-  Box,
-  Stack,
-  Typography,
-  IconButton,
-} from "@mui/material";
-import React from "react";
+import { Box, Stack, Typography, IconButton } from "@mui/material";
+import React, { useState, useEffect } from "react";
 import {
   Visibility as VisibilityIcon,
   Comment as CommentIcon,
   Favorite as FavoriteIcon,
 } from "@mui/icons-material";
+import { supabase } from "@/lib/supabaseClient";
 
-type RightCountProps = {
+interface RightCountProps {
   post: {
-    view_count: number;
-    comment_count: number;
-    like_count: number;
     id: string;
+    view_count: number;
+    like_count: number;
   };
-  userId: string | undefined;
-};
+  userId?: string;
+  commentCount: number;
+}
 
-export default function RightCount({ post, userId }: RightCountProps) {
-  const [liked, setLiked] = React.useState(false);
-  const [likeCount, setLikeCount] = React.useState(post.like_count);
+export default function RightCount({
+  post,
+  userId,
+  commentCount,
+}: RightCountProps) {
+  const [likeCount, setLikeCount] = useState<number>(post.like_count || 0);
+  const [liked, setLiked] = useState<boolean>(false);
 
-  const storageKey = `post_${post.id}_liked_by_${userId}`;
+  useEffect(() => {
+    const checkLiked = async () => {
+      if (!userId) return;
 
-  React.useEffect(() => {
-    console.log("userId:", userId);
-    if (!userId) return;
-    const saved = localStorage.getItem(storageKey);
-    setLiked(saved === "true");
-    setLikeCount(post.like_count);
-  }, [post.like_count, storageKey, userId]);
+      const { data } = await supabase
+        .from("post_likes")
+        .select("id")
+        .eq("post_id", post.id)
+        .eq("user_id", userId)
+        .single();
 
-  const handleLikeToggle = () => {
+      if (data) setLiked(true);
+    };
+
+    checkLiked();
+  }, [post.id, userId]);
+
+  const handleLikeToggle = async () => {
     if (!userId) {
-      alert("좋아요는 로그인 후 가능합니다.");
+      alert("로그인이 필요합니다.");
       return;
     }
 
     if (liked) {
-      setLiked(false);
-      setLikeCount((c) => c - 1);
-      localStorage.removeItem(storageKey);
-    } else {
-      setLiked(true);
-      setLikeCount((c) => c + 1);
-      localStorage.setItem(storageKey, "true");
-    }
+      await supabase
+        .from("post_likes")
+        .delete()
+        .eq("post_id", post.id)
+        .eq("user_id", userId);
 
+      await supabase
+        .from("posts")
+        .update({ like_count: likeCount - 1 })
+        .eq("id", post.id);
+
+      setLikeCount((prev) => prev - 1);
+      setLiked(false);
+    } else {
+      await supabase.from("post_likes").insert({
+        post_id: post.id,
+        user_id: userId,
+      });
+
+      await supabase
+        .from("posts")
+        .update({ like_count: likeCount + 1 })
+        .eq("id", post.id);
+
+      setLikeCount((prev) => prev + 1);
+      setLiked(true);
+    }
   };
 
   return (
@@ -63,10 +88,15 @@ export default function RightCount({ post, userId }: RightCountProps) {
       </Box>
       <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
         <CommentIcon fontSize="small" />
-        <Typography variant="body2">{post.comment_count}</Typography>
+        <Typography variant="body2">{commentCount}</Typography>
       </Box>
       <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-        <IconButton onClick={handleLikeToggle} size="small" color={liked ? "error" : "default"}>
+        <IconButton
+          onClick={handleLikeToggle}
+          size="small"
+          color={liked ? "error" : "default"}
+          disabled={!userId}
+        >
           <FavoriteIcon fontSize="small" />
         </IconButton>
         <Typography variant="body2">{likeCount}</Typography>

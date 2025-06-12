@@ -9,34 +9,78 @@ import {
   Paper,
   Typography,
 } from "@mui/material";
-import React, { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import { List as ListIcon } from "@mui/icons-material";
 import Comment from "./comment";
 import BoardTop from "../../board-top";
 import RightCount from "./right-count";
-import { usePostDetail } from "../../../hook/board";
+import { supabase } from "@/lib/supabaseClient";
 import { useUser } from "@supabase/auth-helpers-react";
 
+type Post = {
+  id: string;
+  title: string;
+  content: string;
+  view_count: number;
+  comment_count: number;
+  like_count: number;
+  created_at: string;
+  category: string;
+  thumbnail?: string;
+  author_id: string;
+};
+
 export default function PostDetailPage() {
-  const params = useParams();
-  const id = params?.id as string;
+  const { id } = useParams();
+  const [post, setPost] = useState<Post | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
+  const [commentCount, setCommentCount] = useState<number>(0);
   const user = useUser();
-  const userId = user?.id;
-  const { post } = usePostDetail(id, userId);
-  const [commentCount, setCommentCount] = React.useState(0);
 
   useEffect(() => {
-    if (post) {
-      setCommentCount(post.comment_count || 0);
-    }
-  }, [post]);
+    if (!id) return;
 
-  if (!post) return <Typography>게시글이 존재하지 않습니다.</Typography>;
+    const fetchPostDetail = async () => {
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("id", id)
+        .single();
 
-  const handleCommentCountChange = (newCount: number) => {
-    setCommentCount(newCount);
+      if (error) {
+        console.error("게시글 상세 정보 불러오기 오류:", error);
+        return;
+      }
+
+      setPost(data);
+
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("id", data.author_id)
+        .single();
+
+      if (profileError) {
+        console.error("유저 이름 가져오기 실패:", profileError.message);
+      } else {
+        setUsername(profile?.username || "알 수 없음");
+      }
+
+      await supabase
+        .from("posts")
+        .update({ view_count: (data.view_count || 0) + 1 })
+        .eq("id", id);
+    };
+
+    fetchPostDetail();
+  }, [id]);
+
+  const handleCommentCountChange = (count: number) => {
+    setCommentCount(count);
   };
+
+  if (!post) return <div>로딩 중...</div>;
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -57,12 +101,14 @@ export default function PostDetailPage() {
             }}
           >
             <Typography variant="body2">
-              작성일: {new Date(post.created_at).toLocaleDateString()}
+              작성자: {username} | 작성일:{" "}
+              {new Date(post.created_at).toLocaleDateString()}
             </Typography>
 
             <RightCount
-              post={{ ...post, comment_count: commentCount }}
-              userId={userId}
+              post={post}
+              userId={user?.id}
+              commentCount={commentCount}
             />
           </Box>
         </Box>
@@ -87,6 +133,7 @@ export default function PostDetailPage() {
 
         <Comment
           postId={post.id}
+          commentCount={commentCount}
           onCommentCountChange={handleCommentCountChange}
         />
 

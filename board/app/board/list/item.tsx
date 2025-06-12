@@ -64,9 +64,9 @@ export default function Items({
         .from("posts")
         .select(
           `
-          *,
-          profiles(username, name)
-          `,
+        *,
+        profiles(username, name)
+        `,
           { count: "exact" }
         )
         .order("created_at", { ascending: false })
