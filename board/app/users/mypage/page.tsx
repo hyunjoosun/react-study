@@ -12,98 +12,107 @@ import {
   TextField,
 } from "@mui/material";
 import { format } from "date-fns";
-import { AuthUser } from "../../hook/auth";
 import { supabase } from "@/lib/supabaseClient";
+import { useUser } from "@supabase/auth-helpers-react";
 
-interface ExtendedAuthUser extends AuthUser {
-  nickname?: string;
-  post_count?: number;
-  comment_count?: number;
-}
+type UserProfile = {
+  id: string;
+  username: string;
+  name: string;
+  created_at: string;
+  post_count: number;
+  comment_count: number;
+};
 
 export default function MyPage() {
-  const [userProfile, setUserProfile] = useState<ExtendedAuthUser | null>(null);
-  const [isEditingNickname, setIsEditingNickname] = useState(false);
-  const [nickname, setNickname] = useState("");
   const router = useRouter();
+  const user = useUser();
+
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [isEditingUsername, setIsEditingUsername] = useState<boolean>(false);
+  const [username, setUsername] = useState<string>("");
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("authUser");
-    if (storedUser) {
-      const user = JSON.parse(storedUser);
-      setUserProfile(user);
-      setNickname(user.nickname || "");
-      fetchUserCounts(user.id);
+    if (!user?.id) {
+      setLoading(false);
+      return;
     }
-  }, []);
 
-  const fetchUserCounts = async (userId: string) => {
-    try {
-      const { count: postCount } = await supabase
-        .from("post")
-        .select("id", { count: "exact", head: true })
-        .eq("author_id", userId);
+    const fetchUserProfile = async () => {
+      setLoading(true);
 
-      const { count: commentCount } = await supabase
-        .from("comment")
-        .select("id", { count: "exact", head: true })
-        .eq("author_id", userId);
+      const { data: profileData, error: profileError } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .single();
 
-      setUserProfile((prev) =>
-        prev
-          ? {
-              ...prev,
-              post_count: postCount || 0,
-              comment_count: commentCount || 0,
-            }
-          : null
-      );
-    } catch (error) {
-      console.error("사용자 통계 조회 실패:", error);
-    }
-  };
+      if (profileError || !profileData) {
+        console.error("프로필 불러오기 실패:", profileError);
+        setUserProfile(null);
+        setLoading(false);
+        return;
+      }
+
+      const { count: postCount, error: postError } = await supabase
+        .from("posts")
+        .select("*", { count: "exact", head: true })
+        .eq("author_id", user.id);
+
+      const { count: commentCount, error: commentError } = await supabase
+        .from("comments")
+        .select("*", { count: "exact", head: true })
+        .eq("author_id", user.id);
+
+      if (postError || commentError) {
+        console.error("카운트 불러오기 실패:", postError || commentError);
+      }
+
+      setUserProfile({
+        ...profileData,
+        post_count: postCount || 0,
+        comment_count: commentCount || 0,
+      });
+
+      setUsername(profileData?.username || "");
+      setLoading(false);
+    };
+
+    fetchUserProfile();
+  }, [user]);
 
   const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-
-      localStorage.removeItem("authUser");
-      router.push("/login");
-    } catch (err) {
-      console.error("로그아웃 중 오류 발생:", err);
-      alert("로그아웃 중 오류가 발생했습니다.");
-    }
+    await supabase.auth.signOut();
+    router.push("/login");
   };
 
-  const handleSaveNickname = async () => {
-    if (!userProfile || !nickname.trim()) return;
+  const handleSaveUsername = async () => {
+    if (!user?.id) return;
 
-    try {
-      const { error } = await supabase
-        .from("users")
-        .update({ nickname: nickname.trim() })
-        .eq("id", userProfile.id);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ username })
+      .eq("id", user.id);
 
-      if (error) throw error;
-
-      const updatedUser: ExtendedAuthUser = {
-        ...userProfile,
-        nickname: nickname.trim(),
-      };
-
-      localStorage.setItem("authUser", JSON.stringify(updatedUser));
-      setUserProfile(updatedUser);
-      setIsEditingNickname(false);
-    } catch (error) {
-      console.error("닉네임 업데이트 실패:", error);
-      alert("닉네임 업데이트에 실패했습니다.");
+    if (error) {
+      alert("닉네임 저장 실패: " + error.message);
+      return;
     }
+
+    setUserProfile((prev) => prev && { ...prev, username });
+    setIsEditingUsername(false);
   };
 
-  if (!userProfile) {
-    return <Typography>로딩 중...</Typography>;
-  }
+  if (loading)
+    return <Typography sx={{ mt: 4, textAlign: "center" }}>로딩중</Typography>;
+
+  if (!userProfile)
+    return (
+      <Typography sx={{ mt: 4, textAlign: "center" }}>
+        사용자 정보를 불러올 수 없습니다.
+      </Typography>
+    );
 
   return (
     <Container maxWidth="sm" sx={{ mt: 4 }}>
@@ -122,33 +131,34 @@ export default function MyPage() {
           로그아웃
         </Button>
       </Box>
+
       <Paper elevation={3} sx={{ p: 4 }}>
         <Box sx={{ display: "flex", alignItems: "flex-start", mb: 3 }}>
-          <Avatar sx={{ width: 80, height: 80, mr: 3 }}>
-            {userProfile.nickname?.charAt(0) ??
-              userProfile.username?.charAt(0) ??
-              "U"}
+          <Avatar sx={{ width: 80, height: 80, mr: 3, fontSize: 40 }}>
+            {userProfile.username?.charAt(0) ?? "U"}
           </Avatar>
           <Box>
-            <Typography variant="h5">{userProfile.username}</Typography>
-            <Typography color="text.secondary">{userProfile.email}</Typography>
+            <Typography variant="h5">{userProfile.name}</Typography>
+            <Typography color="text.secondary" sx={{ mb: 1 }}>
+              이메일: {user?.email || "알 수 없음"}
+            </Typography>
 
-            {isEditingNickname ? (
+            {isEditingUsername ? (
               <Box sx={{ mt: 2 }}>
                 <TextField
                   label="닉네임"
-                  value={nickname}
-                  onChange={(e) => setNickname(e.target.value)}
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   size="small"
-                  sx={{ width: "200px", mb: 1 }}
-                  helperText="닉네임은 댓글 작성시 표시됩니다"
+                  sx={{ width: 200, mb: 1 }}
+                  helperText="닉네임은 댓글 작성 시 표시됩니다"
                 />
                 <Box sx={{ mt: 1 }}>
                   <Button
                     variant="outlined"
                     onClick={() => {
-                      setIsEditingNickname(false);
-                      setNickname(userProfile.nickname || "");
+                      setIsEditingUsername(false);
+                      setUsername(userProfile.username || "");
                     }}
                     sx={{ mr: 1 }}
                     size="small"
@@ -157,7 +167,7 @@ export default function MyPage() {
                   </Button>
                   <Button
                     variant="contained"
-                    onClick={handleSaveNickname}
+                    onClick={handleSaveUsername}
                     size="small"
                   >
                     저장
@@ -169,14 +179,14 @@ export default function MyPage() {
                 sx={{ mt: 1, display: "flex", alignItems: "center", gap: 1 }}
               >
                 <Typography color="text.secondary">
-                  닉네임: {userProfile.nickname || "미설정"}
+                  닉네임: {userProfile.username || "미설정"}
                 </Typography>
                 <Button
                   size="small"
-                  onClick={() => setIsEditingNickname(true)}
+                  onClick={() => setIsEditingUsername(true)}
                   variant="outlined"
                 >
-                  {userProfile.nickname ? "수정" : "설정"}
+                  {userProfile.username ? "수정" : "설정"}
                 </Button>
               </Box>
             )}
@@ -196,10 +206,7 @@ export default function MyPage() {
           </Paper>
         </Box>
 
-        <Typography variant="body1" sx={{ mb: 1 }}>
-          {userProfile.title}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" color="text.secondary" sx={{ mt: 3 }}>
           가입일: {format(new Date(userProfile.created_at), "yyyy년 MM월 dd일")}
         </Typography>
 

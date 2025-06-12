@@ -22,12 +22,12 @@ export default function EditPostPage() {
   const params = useParams();
   const id = Number(params?.id);
 
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [category, setCategory] = useState("");
+  const [title, setTitle] = useState<string>("");
+  const [content, setContent] = useState<string>("");
+  const [category, setCategory] = useState<string>("");
   const [thumbnail, setThumbnail] = useState<string | null>(null);
   const [newThumbnailFile, setNewThumbnailFile] = useState<File | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (!id) return;
@@ -184,7 +184,6 @@ export default function EditPostPage() {
           />
         </Button>
 
-        {/* 버튼 영역 */}
         <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
           <Button variant="outlined" onClick={handleCancel}>
             취소

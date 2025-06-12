@@ -29,7 +29,7 @@ export default function Category({
 }: CategoryProps) {
   const [categories, setCategories] = useState<string[]>([]);
   const [inputValue, setInputValue] = useState<string>(search);
-  const [selectedCategory, setSelectedCategory] = useState(category);
+  const [selectedCategory, setSelectedCategory] = useState<string>(category);
 
   useEffect(() => {
     const fetchCategories = async () => {
