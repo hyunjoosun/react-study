@@ -78,10 +78,10 @@ export default function EditPostPage() {
     if (newThumbnailFile) {
       const fileExt = newThumbnailFile.name.split(".").pop();
       const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `thumbnails/${fileName}`;
+      const filePath = `thumbnail/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
-        .from("thumbnails")
+        .from("thumbnail")
         .upload(filePath, newThumbnailFile, {
           cacheControl: "3600",
           upsert: false,
@@ -93,7 +93,7 @@ export default function EditPostPage() {
       }
 
       const { data: publicUrlData } = supabase.storage
-        .from("thumbnails")
+        .from("thumbnail")
         .getPublicUrl(filePath);
 
       thumbnailUrl = publicUrlData.publicUrl;
