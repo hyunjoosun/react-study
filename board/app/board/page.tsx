@@ -1,19 +1,14 @@
 "use client";
 
 import { Box, Container } from "@mui/material";
-import { useState } from "react";
+import { useBoardList } from "../hook/boardList";
 import Category from "./list/category";
 import Items from "./list/item";
 import BoardTop from "./board-top";
 
 export default function BoardPage() {
-  const [page, setPage] = useState<number>(1);
-  const [category, setCategory] = useState<string>("all");
-  const [search, setSearch] = useState<string>("");
-
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-  };
+  const { page, category, setCategory, search, setSearch, handlePageChange } =
+    useBoardList();
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
