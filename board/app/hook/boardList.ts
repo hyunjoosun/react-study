@@ -8,6 +8,24 @@ export type FormValues = {
   password: string;
 };
 
+interface PostProps {
+  id: number;
+  title: string;
+  content: string;
+  thumbnail?: string;
+  category?: string;
+  created_at: string;
+  view_count: number;
+  comment_count: number;
+  like_count: number;
+  author_id: string;
+  profiles: {
+    username: string;
+    name: string;
+  };
+}
+
+// 게시판 리스트
 export const useBoardList = () => {
   const [page, setPage] = useState<number>(1);
   const [category, setCategory] = useState<string>("all");
@@ -27,6 +45,7 @@ export const useBoardList = () => {
   };
 };
 
+// 게시판 리스트 - 카테고리
 export const useCategory = (category = "all", search = "") => {
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>(category);
@@ -65,5 +84,58 @@ export const useCategory = (category = "all", search = "") => {
     inputValue,
     setSelectedCategory: handleCategoryChange,
     setInputValue: handleInputChange,
+  };
+};
+
+// 게시판 리스트 - 아이템
+export const useBoardItem = (
+  category: string,
+  keyword: string,
+  page: number,
+  itemsPerPage = 10
+) => {
+  const [posts, setPosts] = useState<PostProps[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [totalPages, setTotalPages] = useState<number>(0);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      const from = (page - 1) * itemsPerPage;
+      const to = from + itemsPerPage - 1;
+
+      let query = supabase
+        .from("posts")
+        .select(
+          `
+        *,
+        profiles(username, name)
+        `,
+          { count: "exact" }
+        )
+        .order("created_at", { ascending: false })
+        .order("id", { ascending: false });
+
+      if (category !== "all") query = query.eq("category", category);
+      if (keyword) query = query.ilike("title", `%${keyword}%`);
+
+      const { data, count, error } = await query.range(from, to);
+
+      if (error) {
+        console.error("에러:", error.message);
+      } else {
+        setPosts(data || []);
+        setTotalPages(Math.ceil((count || 0) / itemsPerPage));
+      }
+      setLoading(false);
+    };
+
+    fetchPosts();
+  }, [category, keyword, page]);
+
+  return {
+    posts,
+    loading,
+    totalPages,
   };
 };

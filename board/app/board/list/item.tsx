@@ -10,14 +10,13 @@ import {
   Typography,
   Pagination,
 } from "@mui/material";
-import { useState, useEffect } from "react";
 import {
   Visibility as VisibilityIcon,
   Comment as CommentIcon,
   Favorite as FavoriteIcon,
 } from "@mui/icons-material";
 import { format } from "date-fns";
-import { supabase } from "@/lib/supabaseClient";
+import { useBoardItem } from "../../hook/boardList";
 
 interface ItemsProps {
   category: string;
@@ -26,68 +25,13 @@ interface ItemsProps {
   onPageChange: (page: number) => void;
 }
 
-interface PostProps {
-  id: number;
-  title: string;
-  content: string;
-  thumbnail?: string;
-  category?: string;
-  created_at: string;
-  view_count: number;
-  comment_count: number;
-  like_count: number;
-  author_id: string;
-  profiles: {
-    username: string;
-    name: string;
-  };
-}
-
 export default function Items({
   category,
   keyword,
   page,
   onPageChange,
 }: ItemsProps) {
-  const [posts, setPosts] = useState<PostProps[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [totalPages, setTotalPages] = useState<number>(0);
-  const ITEMS_PER_PAGE = 10;
-
-  useEffect(() => {
-    const fetchPosts = async () => {
-      setLoading(true);
-      const from = (page - 1) * ITEMS_PER_PAGE;
-      const to = from + ITEMS_PER_PAGE - 1;
-
-      let query = supabase
-        .from("posts")
-        .select(
-          `
-        *,
-        profiles(username, name)
-        `,
-          { count: "exact" }
-        )
-        .order("created_at", { ascending: false })
-        .order("id", { ascending: false });
-
-      if (category !== "all") query = query.eq("category", category);
-      if (keyword) query = query.ilike("title", `%${keyword}%`);
-
-      const { data, count, error } = await query.range(from, to);
-
-      if (error) {
-        console.error("에러:", error.message);
-      } else {
-        setPosts(data || []);
-        setTotalPages(Math.ceil((count || 0) / ITEMS_PER_PAGE));
-      }
-      setLoading(false);
-    };
-
-    fetchPosts();
-  }, [category, keyword, page]);
+  const { posts, loading, totalPages } = useBoardItem(category, keyword, page);
 
   if (loading) {
     return <Typography>로딩중</Typography>;
