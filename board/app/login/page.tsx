@@ -42,22 +42,41 @@ export default function Login() {
 
     const { email, password } = data;
 
-    const {
-      data: { session },
-      error,
-    } = await supabase.auth.signInWithPassword({
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (error) {
       setErrorMsg(error.message);
-    } else {
-      if (session) {
-        alert("로그인 성공");
-        router.push("/board");
-      }
+      return;
     }
+
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      setErrorMsg("유저 정보를 가져오는 데 실패했습니다.");
+      return;
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("id", user.id)
+      .single();
+
+    if (profileError) {
+      setErrorMsg("프로필 정보를 불러오는 데 실패했습니다.");
+      return;
+    }
+
+    sessionStorage.setItem("userProfile", JSON.stringify(profile));
+
+    alert("로그인 성공!");
+    router.push("/board");
   };
 
   return (
