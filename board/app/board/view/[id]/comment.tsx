@@ -1,10 +1,9 @@
 "use client";
 
 import { Box, Divider, Typography } from "@mui/material";
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabaseClient";
 import CommentList from "./comment-list";
 import CommentForm from "./comment-form";
+import { useComment } from "../../../hook/boardView";
 
 interface CommentProps {
   postId: number;
@@ -17,21 +16,10 @@ export default function Comment({
   commentCount,
   onCommentCountChange,
 }: CommentProps) {
-  const [refresh, setRefresh] = useState<boolean>(false);
-
-  useEffect(() => {
-    const fetchCount = async () => {
-      const { count } = await supabase
-        .from("comments")
-        .select("*", { count: "exact", head: true })
-        .eq("post_id", postId);
-      onCommentCountChange(count || 0);
-    };
-
-    fetchCount();
-  }, [postId, refresh]);
-
-  const handleCommentAdded = () => setRefresh((prev) => !prev);
+  const { refreshKey, handleCommentAdded } = useComment(
+    postId,
+    onCommentCountChange
+  );
 
   return (
     <>
@@ -40,7 +28,7 @@ export default function Comment({
           댓글 ({commentCount})
         </Typography>
 
-        <CommentList key={refresh.toString()} postId={postId} />
+        <CommentList key={refreshKey.toString()} postId={postId} />
       </Box>
 
       <Divider sx={{ my: 3 }} />

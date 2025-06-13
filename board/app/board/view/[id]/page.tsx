@@ -9,73 +9,23 @@ import {
   Paper,
   Typography,
 } from "@mui/material";
-import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
+import { useUser } from "@supabase/auth-helpers-react";
 import { List as ListIcon } from "@mui/icons-material";
+import { useState } from "react";
+
 import Comment from "./comment";
 import BoardTop from "../../board-top";
 import RightCount from "./right-count";
-import { supabase } from "@/lib/supabaseClient";
-import { useUser } from "@supabase/auth-helpers-react";
-
-type Post = {
-  id: string;
-  title: string;
-  content: string;
-  view_count: number;
-  comment_count: number;
-  like_count: number;
-  created_at: string;
-  category: string;
-  thumbnail?: string;
-  author_id: string;
-};
+import { useBoardView } from "../../../hook/boardView";
 
 export default function PostDetailPage() {
   const { id } = useParams();
   const numId = Number(id);
-  const [post, setPost] = useState<Post | null>(null);
-  const [username, setUsername] = useState<string | null>(null);
-  const [commentCount, setCommentCount] = useState<number>(0);
   const user = useUser();
+  const [commentCount, setCommentCount] = useState<number>(0);
 
-  useEffect(() => {
-    if (!id) return;
-
-    const fetchPostDetail = async () => {
-      const { data, error } = await supabase
-        .from("posts")
-        .select("*")
-        .eq("id", numId)
-        .single();
-
-      if (error) {
-        console.error("게시글 상세 정보 불러오기 오류:", error);
-        return;
-      }
-
-      setPost(data);
-
-      const { data: profile, error: profileError } = await supabase
-        .from("profiles")
-        .select("username")
-        .eq("id", data.author_id)
-        .single();
-
-      if (profileError) {
-        console.error("유저 이름 가져오기 실패:", profileError.message);
-      } else {
-        setUsername(profile?.username || "알 수 없음");
-      }
-
-      await supabase
-        .from("posts")
-        .update({ view_count: (data.view_count || 0) + 1 })
-        .eq("id", numId);
-    };
-
-    fetchPostDetail();
-  }, [id]);
+  const { post, username } = useBoardView(numId);
 
   const handleCommentCountChange = (count: number) => {
     setCommentCount(count);

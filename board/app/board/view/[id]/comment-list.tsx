@@ -1,21 +1,8 @@
 "use client";
 
 import { Box, Button, TextField, Typography } from "@mui/material";
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
 import { useUser } from "@supabase/auth-helpers-react";
-
-interface Comment {
-  id: number;
-  post_id: number;
-  author_id: string;
-  content: string;
-  created_at: string;
-  profiles: {
-    username: string;
-    name: string;
-  };
-}
+import { useCommentList } from "../../../hook/boardView";
 
 interface CommentListProps {
   postId: number;
@@ -23,67 +10,17 @@ interface CommentListProps {
 
 export default function CommentList({ postId }: CommentListProps) {
   const user = useUser();
-  const [comments, setComments] = useState<Comment[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
-  const [editContent, setEditContent] = useState<string>("");
-  const [commentLoading, setCommentLoading] = useState<boolean>(false);
-
-  const fetchComments = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("comments")
-      .select("*, profiles(username, name)")
-      .eq("post_id", postId)
-      .order("created_at", { ascending: true });
-
-    if (error) {
-      console.error("댓글 불러오기 오류:", error.message);
-    } else {
-      setComments(data);
-    }
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    fetchComments();
-  }, [postId]);
-
-  const handleEditSubmit = async (commentId: number) => {
-    if (!editContent.trim()) return;
-
-    setCommentLoading(true);
-    const { error } = await supabase
-      .from("comments")
-      .update({ content: editContent })
-      .eq("id", commentId);
-
-    if (error) {
-      console.error("댓글 수정 오류:", error.message);
-    } else {
-      await fetchComments();
-      setEditingCommentId(null);
-    }
-    setCommentLoading(false);
-  };
-
-  const handleDelete = async (commentId: number) => {
-    const ok = confirm("정말 삭제하시겠습니까?");
-    if (!ok) return;
-
-    setCommentLoading(true);
-    const { error } = await supabase
-      .from("comments")
-      .delete()
-      .eq("id", commentId);
-
-    if (error) {
-      console.error("댓글 삭제 오류:", error.message);
-    } else {
-      await fetchComments();
-    }
-    setCommentLoading(false);
-  };
+  const {
+    comments,
+    loading,
+    commentLoading,
+    editingCommentId,
+    editContent,
+    setEditContent,
+    setEditingCommentId,
+    handleEditSubmit,
+    handleDelete,
+  } = useCommentList(postId);
 
   if (loading) return <Typography variant="body2">로딩중...</Typography>;
   if (comments.length === 0)
