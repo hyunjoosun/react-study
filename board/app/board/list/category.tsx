@@ -11,8 +11,7 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import { Search as SearchIcon } from "@mui/icons-material";
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
+import { useCategory } from "../../hook/boardList";
 
 interface CategoryProps {
   category: string;
@@ -27,28 +26,13 @@ export default function Category({
   onCategoryChange,
   onSearch,
 }: CategoryProps) {
-  const [categories, setCategories] = useState<string[]>([]);
-  const [inputValue, setInputValue] = useState<string>(search);
-  const [selectedCategory, setSelectedCategory] = useState<string>(category);
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      const { data, error } = await supabase.from("posts").select("category");
-
-      if (error) {
-        console.error("카테고리 로딩 오류:", error.message);
-        return;
-      }
-
-      const uniqueCategories = Array.from(
-        new Set(data.map((post) => post.category).filter(Boolean))
-      );
-
-      setCategories(uniqueCategories);
-    };
-
-    fetchCategories();
-  }, []);
+  const {
+    categories,
+    selectedCategory,
+    inputValue,
+    setSelectedCategory,
+    setInputValue,
+  } = useCategory(category, search);
 
   const handleCategoryChange = (event: SelectChangeEvent) => {
     setSelectedCategory(event.target.value);
