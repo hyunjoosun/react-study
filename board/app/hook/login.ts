@@ -12,7 +12,7 @@ export type FormValues = {
 
 export const useLogin = () => {
   const router = useRouter();
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const {
@@ -62,6 +62,7 @@ export const useLogin = () => {
       return;
     }
 
+    document.cookie = `authUser=${user.id}; path=/`;
     sessionStorage.setItem("userProfile", JSON.stringify(profile));
     alert("로그인 성공!");
     router.push("/board");
