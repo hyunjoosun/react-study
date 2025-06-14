@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { supabase } from "@/lib/supabaseClient";
@@ -22,7 +22,11 @@ export const useLogin = () => {
     },
   });
 
-  const onSubmit = async (data: LoginForm) => {
+  const toggleShowPassword = useCallback(() => {
+    setShowPassword((prev) => !prev);
+  }, []);
+
+  const onSubmit = useCallback(async (data: LoginForm) => {
     setErrorMsg(null);
 
     const { email, password } = data;
@@ -58,12 +62,11 @@ export const useLogin = () => {
       return;
     }
 
-    // Set auth cookie
     document.cookie = `authUser=${user.id}; path=/`;
-    
+    sessionStorage.setItem("userProfile", JSON.stringify(profile));
     alert("로그인 성공!");
     router.push("/board");
-  };
+  }, [router]);
 
   return {
     control,
@@ -71,7 +74,7 @@ export const useLogin = () => {
     errors,
     onSubmit,
     showPassword,
-    setShowPassword,
+    setShowPassword: toggleShowPassword,
     errorMsg,
   };
 };

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -40,24 +40,24 @@ export function useBoardEdit() {
     fetchPost();
   }, [id]);
 
-  const handleThumbnailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleThumbnailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setNewThumbnailFile(file);
       setThumbnail(URL.createObjectURL(file));
     }
-  };
+  }, []);
 
-  const handleThumbnailDelete = () => {
+  const handleThumbnailDelete = useCallback(() => {
     setNewThumbnailFile(null);
     setThumbnail(null);
-  };
+  }, []);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     router.push(`/board/view/${id}`);
-  };
+  }, [router, id]);
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     let thumbnailUrl = thumbnail;
 
     if (newThumbnailFile) {
@@ -101,7 +101,7 @@ export function useBoardEdit() {
 
     alert("수정 완료");
     router.push(`/board/view/${id}`);
-  };
+  }, [thumbnail, newThumbnailFile, title, content, category, id, router]);
 
   return {
     title,
