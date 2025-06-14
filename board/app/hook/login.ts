@@ -4,11 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { supabase } from "@/lib/supabaseClient";
-
-export type FormValues = {
-  email: string;
-  password: string;
-};
+import { LoginForm } from "../types";
 
 export const useLogin = () => {
   const router = useRouter();
@@ -19,14 +15,14 @@ export const useLogin = () => {
     control,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormValues>({
+  } = useForm<LoginForm>({
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  const onSubmit = async (data: FormValues) => {
+  const onSubmit = async (data: LoginForm) => {
     setErrorMsg(null);
 
     const { email, password } = data;
@@ -62,8 +58,9 @@ export const useLogin = () => {
       return;
     }
 
+    // Set auth cookie
     document.cookie = `authUser=${user.id}; path=/`;
-    sessionStorage.setItem("userProfile", JSON.stringify(profile));
+    
     alert("로그인 성공!");
     router.push("/board");
   };

@@ -14,15 +14,7 @@ import {
 import { format } from "date-fns";
 import { supabase } from "@/lib/supabaseClient";
 import { useUser } from "@supabase/auth-helpers-react";
-
-type UserProfile = {
-  id: string;
-  username: string;
-  name: string;
-  created_at: string;
-  post_count: number;
-  comment_count: number;
-};
+import { UserProfile } from "../../types";
 
 export default function MyPage() {
   const router = useRouter();

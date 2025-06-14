@@ -1,19 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { User } from "@supabase/auth-helpers-react";
-
-export type Post = {
-  id: string;
-  title: string;
-  content: string;
-  view_count: number;
-  comment_count: number;
-  like_count: number;
-  created_at: string;
-  category: string;
-  thumbnail?: string;
-  author_id: string;
-};
+import { Post, CommentWithProfile } from "../types";
 
 export interface Comment {
   id: number;
@@ -168,7 +156,7 @@ export function useComment(
 
 // 게시판 상세 - 댓글 리스트
 export function useCommentList(postId: number) {
-  const [comments, setComments] = useState<Comment[]>([]);
+  const [comments, setComments] = useState<CommentWithProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [commentLoading, setCommentLoading] = useState(false);
   const [editingCommentId, setEditingCommentId] = useState<number | null>(null);

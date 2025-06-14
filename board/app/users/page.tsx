@@ -20,23 +20,14 @@ import {
 import { Search as SearchIcon, Close as CloseIcon } from "@mui/icons-material";
 import { format } from "date-fns";
 import { supabase } from "@/lib/supabaseClient";
+import { UserProfile } from "../types";
 
 const ITEMS_PER_PAGE = 10;
 
-interface User {
-  id: string;
-  name: string;
-  username: string;
-  nickname?: string;
-  created_at: string;
-  post_count: number;
-  comment_count: number;
-}
-
 export default function UsersPage() {
-  const [users, setUsers] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [users, setUsers] = useState<UserProfile[]>([]);
+  const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([]);
+  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [searchInput, setSearchInput] = useState<string>("");
   const [page, setPage] = useState<number>(1);
 
@@ -84,7 +75,7 @@ export default function UsersPage() {
     setFilteredUsers(usersWithCounts);
   };
 
-  const handleUserClick = (user: User) => {
+  const handleUserClick = (user: UserProfile) => {
     setSelectedUser(user);
   };
 
@@ -190,7 +181,7 @@ export default function UsersPage() {
                     bgcolor: "primary.main",
                   }}
                 >
-                  {user.nickname?.charAt(0) ?? user.username?.charAt(0) ?? "U"}
+                  {user.username?.charAt(0) ?? "U"}
                 </Avatar>
                 <Box sx={{ flex: 1 }}>
                   <Typography variant="subtitle1">{user.name}</Typography>
@@ -256,9 +247,7 @@ export default function UsersPage() {
                     bgcolor: "primary.main",
                   }}
                 >
-                  {selectedUser.nickname?.charAt(0) ??
-                    selectedUser.username?.charAt(0) ??
-                    "U"}
+                  {selectedUser.username?.charAt(0) ?? "U"}
                 </Avatar>
                 <Box>
                   <Typography variant="h6">{selectedUser.name}</Typography>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
+import { PostWithProfile } from "../types";
 
 export type FormValues = {
   email: string;
@@ -94,7 +95,7 @@ export const useBoardItem = (
   page: number,
   itemsPerPage = 10
 ) => {
-  const [posts, setPosts] = useState<PostProps[]>([]);
+  const [posts, setPosts] = useState<PostWithProfile[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [totalPages, setTotalPages] = useState<number>(0);
 
