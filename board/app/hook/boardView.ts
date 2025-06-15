@@ -79,7 +79,7 @@ export function usePostLike(
         .select("id")
         .eq("post_id", postId)
         .eq("user_id", userId)
-        .single();
+        .maybeSingle();
 
       if (data) setLiked(true);
     };
