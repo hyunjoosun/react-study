@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { supabase } from "@/lib/supabaseClient";
 import { LoginForm } from "../types";
+import { hashPassword } from "./hash";
 
 export const useLogin = () => {
   const router = useRouter();
@@ -26,47 +27,32 @@ export const useLogin = () => {
     setShowPassword((prev) => !prev);
   }, []);
 
-  const onSubmit = useCallback(async (data: LoginForm) => {
-    setErrorMsg(null);
+  const onSubmit = useCallback(
+    async (data: LoginForm) => {
+      setErrorMsg(null);
 
-    const { email, password } = data;
+      const hashedPassword = await hashPassword(data.password);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+      const { data: user, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("email", data.email)
+        .eq("password", hashedPassword)
+        .single();
 
-    if (error) {
-      setErrorMsg(error.message);
-      return;
-    }
+      if (error || !user) {
+        setErrorMsg("이메일 또는 비밀번호가 일치하지 않습니다.");
+        return;
+      }
 
-    const {
-      data: { user },
-      error: userError,
-    } = await supabase.auth.getUser();
+      sessionStorage.setItem("userProfile", JSON.stringify(user));
+      document.cookie = `authUser=${user.id}; path=/`;
 
-    if (userError || !user) {
-      setErrorMsg("유저 정보를 가져오는 데 실패했습니다.");
-      return;
-    }
-
-    const { data: profile, error: profileError } = await supabase
-      .from("profiles")
-      .select("*")
-      .eq("id", user.id)
-      .single();
-
-    if (profileError) {
-      setErrorMsg("프로필 정보를 불러오는 데 실패했습니다.");
-      return;
-    }
-
-    document.cookie = `authUser=${user.id}; path=/`;
-    sessionStorage.setItem("userProfile", JSON.stringify(profile));
-    alert("로그인 성공!");
-    router.push("/board");
-  }, [router]);
+      alert("로그인 성공!");
+      router.push("/board");
+    },
+    [router]
+  );
 
   return {
     control,

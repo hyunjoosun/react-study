@@ -10,23 +10,20 @@ import { useRouter } from "next/navigation";
 export default function BoardTop() {
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
+  const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (user) {
-        setIsAdmin(user.email === "admin@example.com");
-      }
-    };
-
-    fetchUser();
+    const storedProfile = sessionStorage.getItem("userProfile");
+    if (storedProfile) {
+      const profile = JSON.parse(storedProfile);
+      setUserProfile(profile);
+      setIsAdmin(profile.email === "admin@example.com");
+    }
   }, []);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
+  const handleLogout = () => {
+    sessionStorage.removeItem("userProfile");
+    document.cookie = "authUser=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     router.push("/login");
   };
 

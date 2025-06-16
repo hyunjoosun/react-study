@@ -1,7 +1,6 @@
 "use client";
 
 import { Box, Button, TextField } from "@mui/material";
-import { useUser } from "@supabase/auth-helpers-react";
 import { useCommentForm } from "../../../hook/boardView";
 
 interface CommentFormProps {
@@ -13,11 +12,8 @@ export default function CommentForm({
   postId,
   onCommentAdded,
 }: CommentFormProps) {
-  const user = useUser();
-
   const { content, setContent, handleSubmit } = useCommentForm(
     postId,
-    user,
     onCommentAdded
   );
 

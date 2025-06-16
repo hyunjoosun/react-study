@@ -13,86 +13,50 @@ import {
 } from "@mui/material";
 import { format } from "date-fns";
 import { supabase } from "@/lib/supabaseClient";
-import { useUser } from "@supabase/auth-helpers-react";
 import { UserProfile } from "../../types";
 
 export default function MyPage() {
   const router = useRouter();
-  const user = useUser();
-
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [isEditingUsername, setIsEditingUsername] = useState<boolean>(false);
   const [username, setUsername] = useState<string>("");
 
   useEffect(() => {
-    if (!user?.id) {
+    const storedProfile = sessionStorage.getItem("userProfile");
+    if (!storedProfile) {
       setLoading(false);
       return;
     }
 
-    const fetchUserProfile = async () => {
-      setLoading(true);
+    const profile = JSON.parse(storedProfile);
+    setUserProfile(profile);
+    setUsername(profile.username || "");
+    setLoading(false);
+  }, []);
 
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", user.id)
-        .single();
-
-      if (profileError || !profileData) {
-        console.error("프로필 불러오기 실패:", profileError);
-        setUserProfile(null);
-        setLoading(false);
-        return;
-      }
-
-      const { count: postCount, error: postError } = await supabase
-        .from("posts")
-        .select("*", { count: "exact", head: true })
-        .eq("author_id", user.id);
-
-      const { count: commentCount, error: commentError } = await supabase
-        .from("comments")
-        .select("*", { count: "exact", head: true })
-        .eq("author_id", user.id);
-
-      if (postError || commentError) {
-        console.error("카운트 불러오기 실패:", postError || commentError);
-      }
-
-      setUserProfile({
-        ...profileData,
-        post_count: postCount || 0,
-        comment_count: commentCount || 0,
-      });
-
-      setUsername(profileData?.username || "");
-      setLoading(false);
-    };
-
-    fetchUserProfile();
-  }, [user]);
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
+  const handleLogout = () => {
+    sessionStorage.removeItem("userProfile");
+    document.cookie = "authUser=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     router.push("/login");
   };
 
   const handleSaveUsername = async () => {
-    if (!user?.id) return;
+    if (!userProfile?.id) return;
 
     const { error } = await supabase
       .from("profiles")
       .update({ username })
-      .eq("id", user.id);
+      .eq("id", userProfile.id);
 
     if (error) {
       alert("닉네임 저장 실패: " + error.message);
       return;
     }
 
-    setUserProfile((prev) => prev && { ...prev, username });
+    const updatedProfile = { ...userProfile, username };
+    sessionStorage.setItem("userProfile", JSON.stringify(updatedProfile));
+    setUserProfile(updatedProfile);
     setIsEditingUsername(false);
   };
 
@@ -132,7 +96,7 @@ export default function MyPage() {
           <Box>
             <Typography variant="h5">{userProfile.name}</Typography>
             <Typography color="text.secondary" sx={{ mb: 1 }}>
-              이메일: {user?.email || "알 수 없음"}
+              이메일: {userProfile.email || "알 수 없음"}
             </Typography>
 
             {isEditingUsername ? (

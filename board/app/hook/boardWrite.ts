@@ -1,13 +1,11 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useUser } from "@supabase/auth-helpers-react";
 import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import { BoardWriteForm } from "../types";
 
 export const useBoardWrite = () => {
   const router = useRouter();
-  const user = useUser();
   const [loading, setLoading] = useState(false);
 
   const {
@@ -24,11 +22,13 @@ export const useBoardWrite = () => {
   });
 
   const onSubmit = async (data: BoardWriteForm) => {
-    if (!user) {
+    const userProfile = sessionStorage.getItem("userProfile");
+    if (!userProfile) {
       alert("로그인이 필요합니다.");
       return;
     }
 
+    const user = JSON.parse(userProfile);
     setLoading(true);
 
     try {

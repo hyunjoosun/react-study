@@ -14,18 +14,15 @@ interface RightCountProps {
     view_count: number;
     like_count: number;
   };
-  userId?: string;
   commentCount: number;
 }
 
 export default function RightCount({
   post,
-  userId,
   commentCount,
 }: RightCountProps) {
   const { likeCount, liked, toggleLike } = usePostLike(
     post.id,
-    userId,
     post.like_count
   );
 
@@ -46,7 +43,6 @@ export default function RightCount({
           onClick={toggleLike}
           size="small"
           color={liked ? "error" : "default"}
-          disabled={!userId}
         >
           <FavoriteIcon fontSize="small" />
         </IconButton>

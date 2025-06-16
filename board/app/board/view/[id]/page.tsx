@@ -10,9 +10,8 @@ import {
   Typography,
 } from "@mui/material";
 import { useParams } from "next/navigation";
-import { useUser } from "@supabase/auth-helpers-react";
 import { List as ListIcon } from "@mui/icons-material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import Comment from "./comment";
 import BoardTop from "../../board-top";
@@ -22,10 +21,18 @@ import { useBoardView } from "../../../hook/boardView";
 export default function PostDetailPage() {
   const { id } = useParams();
   const numId = Number(id);
-  const user = useUser();
+  const [userId, setUserId] = useState<string | null>(null);
   const [commentCount, setCommentCount] = useState<number>(0);
 
   const { post, username } = useBoardView(numId);
+
+  useEffect(() => {
+    const userProfile = sessionStorage.getItem("userProfile");
+    if (userProfile) {
+      const user = JSON.parse(userProfile);
+      setUserId(user.id);
+    }
+  }, []);
 
   const handleCommentCountChange = (count: number) => {
     setCommentCount(count);
@@ -58,7 +65,6 @@ export default function PostDetailPage() {
 
             <RightCount
               post={post}
-              userId={user?.id}
               commentCount={commentCount}
             />
           </Box>
@@ -91,7 +97,7 @@ export default function PostDetailPage() {
         <Divider sx={{ my: 3 }} />
 
         <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
-          {user?.id === post.author_id && (
+          {userId === post.author_id && (
             <Button variant="outlined" href={`/board/edit/${post.id}`}>
               수정
             </Button>

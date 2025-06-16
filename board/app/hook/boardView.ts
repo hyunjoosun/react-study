@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import { User } from "@supabase/auth-helpers-react";
 import { Post, CommentWithProfile } from "../types";
 
 export interface Comment {
@@ -64,7 +63,6 @@ export function useBoardView(postId: number | null) {
 // 게시판 상세 - 오른쪽 카운터
 export function usePostLike(
   postId: string,
-  userId?: string,
   initialLikeCount = 0
 ) {
   const [likeCount, setLikeCount] = useState(initialLikeCount);
@@ -72,33 +70,39 @@ export function usePostLike(
 
   useEffect(() => {
     const checkLiked = async () => {
-      if (!userId) return;
+      const userProfile = sessionStorage.getItem("userProfile");
+      if (!userProfile) return;
+
+      const user = JSON.parse(userProfile);
 
       const { data } = await supabase
         .from("post_likes")
         .select("id")
         .eq("post_id", postId)
-        .eq("user_id", userId)
+        .eq("user_id", user.id)
         .maybeSingle();
 
       if (data) setLiked(true);
     };
 
     checkLiked();
-  }, [postId, userId]);
+  }, [postId]);
 
   const toggleLike = async () => {
-    if (!userId) {
+    const userProfile = sessionStorage.getItem("userProfile");
+    if (!userProfile) {
       alert("로그인이 필요합니다.");
       return;
     }
+
+    const user = JSON.parse(userProfile);
 
     if (liked) {
       await supabase
         .from("post_likes")
         .delete()
         .eq("post_id", postId)
-        .eq("user_id", userId);
+        .eq("user_id", user.id);
 
       await supabase
         .from("posts")
@@ -110,7 +114,7 @@ export function usePostLike(
     } else {
       await supabase.from("post_likes").insert({
         post_id: postId,
-        user_id: userId,
+        user_id: user.id,
       });
 
       await supabase
@@ -235,13 +239,13 @@ export function useCommentList(postId: number) {
 // 게시판 상세 - 댓글 폼
 export function useCommentForm(
   postId: number,
-  user: User | null,
   onCommentAdded: () => void
 ) {
   const [content, setContent] = useState("");
 
   const handleSubmit = async () => {
-    if (!user) {
+    const userProfile = sessionStorage.getItem("userProfile");
+    if (!userProfile) {
       alert("로그인이 필요합니다.");
       return;
     }
@@ -250,6 +254,8 @@ export function useCommentForm(
       alert("댓글 내용을 입력해주세요.");
       return;
     }
+
+    const user = JSON.parse(userProfile);
 
     const { error } = await supabase.from("comments").insert([
       {
