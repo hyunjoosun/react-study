@@ -49,8 +49,6 @@ export default function Category({
     if (event.key === "Enter") handleSearch();
   };
 
-  const handleSearchClick = () => handleSearch();
-
   return (
     <Box sx={{ mb: 3, display: "flex", gap: 2 }}>
       <FormControl sx={{ minWidth: 120 }}>
@@ -77,7 +75,7 @@ export default function Category({
         onKeyDown={handleKeyDown}
         InputProps={{
           endAdornment: (
-            <IconButton onClick={handleSearchClick} edge="end">
+            <IconButton onClick={handleSearch} edge="end">
               <SearchIcon />
             </IconButton>
           ),
