@@ -1,18 +1,29 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
+import { useForm } from "react-hook-form";
+import { BoardWriteForm } from "../types";
 
 export function useBoardEdit() {
   const router = useRouter();
   const params = useParams();
   const id = Number(params?.id);
-
-  const [title, setTitle] = useState<string>("");
-  const [content, setContent] = useState<string>("");
-  const [category, setCategory] = useState<string>("");
-  const [thumbnail, setThumbnail] = useState<string | null>(null);
-  const [newThumbnailFile, setNewThumbnailFile] = useState<File | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [defaultThumbnail, setDefaultThumbnail] = useState<string | null>(null);
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<BoardWriteForm>({
+    defaultValues: {
+      category: "",
+      title: "",
+      content: "",
+      thumbnail: null,
+    },
+  });
 
   useEffect(() => {
     if (!id) return;
@@ -30,91 +41,82 @@ export function useBoardEdit() {
         return;
       }
 
-      setTitle(data.title);
-      setContent(data.content);
-      setCategory(data.category);
-      setThumbnail(data.thumbnail || null);
+      reset({
+        category: data.category,
+        title: data.title,
+        content: data.content,
+        thumbnail: null,
+      });
+      setDefaultThumbnail(data.thumbnail);
       setLoading(false);
     };
 
     fetchPost();
-  }, [id]);
+  }, [id, reset]);
 
-  const handleThumbnailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setNewThumbnailFile(file);
-      setThumbnail(URL.createObjectURL(file));
-    }
-  }, []);
-
-  const handleThumbnailDelete = useCallback(() => {
-    setNewThumbnailFile(null);
-    setThumbnail(null);
-  }, []);
-
-  const handleCancel = useCallback(() => {
-    router.push(`/board/view/${id}`);
-  }, [router, id]);
-
-  const handleSubmit = useCallback(async () => {
-    let thumbnailUrl = thumbnail;
-
-    if (newThumbnailFile) {
-      const fileExt = newThumbnailFile.name.split(".").pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `thumbnail/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("thumbnail")
-        .upload(filePath, newThumbnailFile, {
-          cacheControl: "3600",
-          upsert: false,
-        });
-
-      if (uploadError) {
-        alert("썸네일 업로드 실패: " + uploadError.message);
-        return;
-      }
-
-      const { data: publicUrlData } = supabase.storage
-        .from("thumbnail")
-        .getPublicUrl(filePath);
-
-      thumbnailUrl = publicUrlData.publicUrl;
-    }
-
-    const { error } = await supabase
-      .from("posts")
-      .update({
-        title,
-        content,
-        category,
-        thumbnail: thumbnailUrl,
-      })
-      .eq("id", id);
-
-    if (error) {
-      alert("수정 실패: " + error.message);
+  const onSubmit = async (data: BoardWriteForm) => {
+    const userProfile = sessionStorage.getItem("userProfile");
+    if (!userProfile) {
+      alert("로그인이 필요합니다.");
       return;
     }
 
-    alert("수정 완료");
-    router.push(`/board/view/${id}`);
-  }, [thumbnail, newThumbnailFile, title, content, category, id, router]);
+    setLoading(true);
+    let thumbnailUrl = defaultThumbnail;
+
+    try {
+      if (data.thumbnail && data.thumbnail.length > 0) {
+        const file = data.thumbnail[0];
+        const safeFileName = file.name
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^\w.-]/g, "_");
+        const filePath = `public/${Date.now()}-${safeFileName}`;
+
+        const { data: storageData, error: uploadError } = await supabase.storage
+          .from("thumbnail")
+          .upload(filePath, file);
+
+        if (uploadError) {
+          throw new Error("썸네일 업로드 중 오류가 발생했습니다.");
+        }
+
+        const {
+          data: { publicUrl },
+        } = supabase.storage.from("thumbnail").getPublicUrl(storageData.path);
+
+        thumbnailUrl = publicUrl;
+      }
+
+      const { error } = await supabase
+        .from("posts")
+        .update({
+          title: data.title,
+          content: data.content,
+          category: data.category,
+          thumbnail: thumbnailUrl,
+        })
+        .eq("id", id);
+
+      if (error) {
+        throw new Error("글 수정 중 오류가 발생했습니다.");
+      }
+
+      alert("글이 성공적으로 수정되었습니다.");
+      router.push(`/board/view/${id}`);
+    } catch (error) {
+      alert(error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return {
-    title,
-    setTitle,
-    content,
-    setContent,
-    category,
-    setCategory,
-    thumbnail,
-    loading,
-    handleThumbnailChange,
-    handleThumbnailDelete,
-    handleCancel,
+    control,
     handleSubmit,
+    errors,
+    onSubmit,
+    loading,
+    defaultThumbnail,
   };
 }
