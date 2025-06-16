@@ -1,42 +1,22 @@
 "use client";
 
-import {
-  Box,
-  Button,
-  Chip,
-  Container,
-  Divider,
-  Paper,
-  Typography,
-} from "@mui/material";
+import { Container, Divider, Paper } from "@mui/material";
 import { useParams } from "next/navigation";
-import { List as ListIcon } from "@mui/icons-material";
-import { useState, useEffect } from "react";
 
 import Comment from "./components/comment";
 import BoardTop from "../../components/board-top";
-import RightCount from "./components/right-count";
-import { useBoardView } from "../../../hook/boardView";
+import PostHeader from "./components/post-header";
+import PostContent from "./components/post-content";
+import PostButtons from "./components/post-buttons";
+import { useBoardView, useUserId, useCommentCount } from "../../../hook/boardView";
 
 export default function PostDetailPage() {
   const { id } = useParams();
   const numId = Number(id);
-  const [userId, setUserId] = useState<string | null>(null);
-  const [commentCount, setCommentCount] = useState<number>(0);
-
+  
   const { post, username } = useBoardView(numId);
-
-  useEffect(() => {
-    const userProfile = sessionStorage.getItem("userProfile");
-    if (userProfile) {
-      const user = JSON.parse(userProfile);
-      setUserId(user.id);
-    }
-  }, []);
-
-  const handleCommentCountChange = (count: number) => {
-    setCommentCount(count);
-  };
+  const userId = useUserId();
+  const { commentCount, handleCommentCountChange } = useCommentCount();
 
   if (!post) return <div>로딩 중...</div>;
 
@@ -45,46 +25,18 @@ export default function PostDetailPage() {
       <BoardTop />
 
       <Paper elevation={3} sx={{ p: 4 }}>
-        <Box sx={{ mb: 3 }}>
-          <Chip size="small" sx={{ mb: 2 }} label={post.category} />
-          <Typography variant="h4" gutterBottom>
-            {post.title}
-          </Typography>
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              color: "text.secondary",
-            }}
-          >
-            <Typography variant="body2">
-              작성자: {username} | 작성일:{" "}
-              {new Date(post.created_at).toLocaleDateString()}
-            </Typography>
-
-            <RightCount
-              post={post}
-              commentCount={commentCount}
-            />
-          </Box>
-        </Box>
+        <PostHeader
+          post={post}
+          username={username}
+          commentCount={commentCount}
+        />
 
         <Divider sx={{ my: 3 }} />
 
-        {post.thumbnail && (
-          <Box sx={{ mb: 3, textAlign: "center" }}>
-            <img
-              src={post.thumbnail}
-              alt="게시글 이미지"
-              style={{ maxWidth: "100%", height: "auto" }}
-            />
-          </Box>
-        )}
-
-        <Typography variant="body1" sx={{ mb: 4, whiteSpace: "pre-wrap" }}>
-          {post.content}
-        </Typography>
+        <PostContent
+          content={post.content}
+          thumbnail={post.thumbnail}
+        />
 
         <Divider sx={{ my: 3 }} />
 
@@ -96,17 +48,11 @@ export default function PostDetailPage() {
 
         <Divider sx={{ my: 3 }} />
 
-        <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
-          {userId === post.author_id && (
-            <Button variant="outlined" href={`/board/edit/${post.id}`}>
-              수정
-            </Button>
-          )}
-
-          <Button variant="contained" startIcon={<ListIcon />} href="/board">
-            목록으로
-          </Button>
-        </Box>
+        <PostButtons
+          postId={String(post.id)}
+          authorId={post.author_id}
+          userId={userId}
+        />
       </Paper>
     </Container>
   );

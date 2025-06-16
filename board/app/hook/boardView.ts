@@ -34,7 +34,13 @@ export function useBoardView(postId: number | null) {
         return;
       }
 
-      setPost(data);
+      // Ensure author_id is a string
+      const postData = {
+        ...data,
+        author_id: data.author_id || "",
+      };
+
+      setPost(postData);
 
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
@@ -277,5 +283,34 @@ export function useCommentForm(
     content,
     setContent,
     handleSubmit,
+  };
+}
+
+// 게시판 상세 - 유저 ID 관리
+export function useUserId() {
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const userProfile = sessionStorage.getItem("userProfile");
+    if (userProfile) {
+      const user = JSON.parse(userProfile);
+      setUserId(user.id);
+    }
+  }, []);
+
+  return userId;
+}
+
+// 게시판 상세 - 댓글 카운트 관리
+export function useCommentCount() {
+  const [commentCount, setCommentCount] = useState<number>(0);
+
+  const handleCommentCountChange = (count: number) => {
+    setCommentCount(count);
+  };
+
+  return {
+    commentCount,
+    handleCommentCountChange,
   };
 }
