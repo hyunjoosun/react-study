@@ -1,5 +1,5 @@
 import { Box, Button, TextField } from "@mui/material";
-import { useCommentForm } from "../../../hook/boardView";
+import { useCommentForm } from "../../../../hook/boardView";
 
 interface CommentFormProps {
   postId: number;

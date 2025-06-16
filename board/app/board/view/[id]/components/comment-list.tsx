@@ -1,6 +1,6 @@
 import { Box, Button, TextField, Typography } from "@mui/material";
 import { useUser } from "@supabase/auth-helpers-react";
-import { useCommentList } from "../../../hook/boardView";
+import { useCommentList } from "../../../../hook/boardView";
 
 interface CommentListProps {
   postId: number;

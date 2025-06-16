@@ -1,7 +1,7 @@
 import { Box, Divider, Typography } from "@mui/material";
 import CommentList from "./comment-list";
 import CommentForm from "./comment-form";
-import { useComment } from "../../../hook/boardView";
+import { useComment } from "../../../../hook/boardView";
 
 interface CommentProps {
   postId: number;

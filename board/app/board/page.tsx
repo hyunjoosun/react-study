@@ -2,9 +2,9 @@
 
 import { Box, Container } from "@mui/material";
 import { useBoardList } from "../hook/boardList";
-import Category from "./list/category";
-import Items from "./list/item";
-import BoardTop from "./board-top";
+import Category from "./components/category";
+import Items from "./components/item";
+import BoardTop from "./components/board-top";
 
 export default function BoardPage() {
   const { page, category, setCategory, search, setSearch, handlePageChange } =

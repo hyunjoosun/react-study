@@ -13,9 +13,9 @@ import { useParams } from "next/navigation";
 import { List as ListIcon } from "@mui/icons-material";
 import { useState, useEffect } from "react";
 
-import Comment from "./comment";
-import BoardTop from "../../board-top";
-import RightCount from "./right-count";
+import Comment from "./components/comment";
+import BoardTop from "../../components/board-top";
+import RightCount from "./components/right-count";
 import { useBoardView } from "../../../hook/boardView";
 
 export default function PostDetailPage() {

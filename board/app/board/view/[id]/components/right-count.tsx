@@ -4,7 +4,7 @@ import {
   Comment as CommentIcon,
   Favorite as FavoriteIcon,
 } from "@mui/icons-material";
-import { usePostLike } from "../../../hook/boardView";
+import { usePostLike } from "../../../../hook/boardView";
 
 interface RightCountProps {
   post: {
