@@ -6,6 +6,7 @@ import PeopleIcon from "@mui/icons-material/People";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
+// @review 컴포넌트는 디렉토리를 components로 만들어서 사용하는게 좀 더 명확하게 보일듯 _를 사용허거나
 export default function BoardTop() {
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState<boolean>(false);

@@ -16,6 +16,7 @@ function useUserProfiles() {
     setLoading(true);
     setError(null);
 
+    // @review 유저 한번에 다 불러오면 부하 올수있음 페이징 처리하는게 맞아보임
     const { data, error } = await supabase.from("profiles").select("*");
 
     if (error) {
@@ -66,6 +67,7 @@ export function useUsers() {
     const loadStats = async () => {
       setStatsLoading(true);
 
+      // @review fetchUserStats 에서 이미 프로미스 all을 쓰고있어서 그냥 await로 처리해도 될듯
       const usersData = await Promise.all(
         users.map(async (user) => {
           const stats = await fetchUserStats(user.id);
@@ -90,7 +92,9 @@ export function useUsers() {
       const name = user.name?.toLowerCase() || "";
       const username = user.username?.toLowerCase() || "";
 
-      return name.includes(lowercasedInput) || username.includes(lowercasedInput);
+      return (
+        name.includes(lowercasedInput) || username.includes(lowercasedInput)
+      );
     });
     setFilteredUsers(filtered);
     setPage(1);

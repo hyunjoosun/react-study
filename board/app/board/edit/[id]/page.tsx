@@ -1,3 +1,6 @@
+// @review use client가 빠져서 페이지 에러
+"use client";
+
 import {
   Box,
   Button,
@@ -13,6 +16,7 @@ import { useBoardEdit } from "../../../hook/boardEdit";
 
 const categories = ["공지사항", "정보", "일반", "질문"];
 
+// @review write 하고 페이지가 같아서 중복코드가 많아서 하나의 컴포넌트를 만들어서 data를 받아서 처리하는게 나을듯
 export default function EditPostPage() {
   const {
     title,

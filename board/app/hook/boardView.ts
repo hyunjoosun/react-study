@@ -61,10 +61,7 @@ export function useBoardView(postId: number | null) {
 }
 
 // 게시판 상세 - 오른쪽 카운터
-export function usePostLike(
-  postId: string,
-  initialLikeCount = 0
-) {
+export function usePostLike(postId: string, initialLikeCount = 0) {
   const [likeCount, setLikeCount] = useState(initialLikeCount);
   const [liked, setLiked] = useState(false);
 
@@ -138,6 +135,7 @@ export function useComment(
   const [refreshKey, setRefreshKey] = useState<boolean>(false);
 
   useEffect(() => {
+    console.log("useComment effect triggered for refreshKey:", refreshKey);
     const fetchCount = async () => {
       const { count } = await supabase
         .from("comments")
@@ -237,10 +235,7 @@ export function useCommentList(postId: number) {
 }
 
 // 게시판 상세 - 댓글 폼
-export function useCommentForm(
-  postId: number,
-  onCommentAdded: () => void
-) {
+export function useCommentForm(postId: number, onCommentAdded: () => void) {
   const [content, setContent] = useState("");
 
   const handleSubmit = async () => {

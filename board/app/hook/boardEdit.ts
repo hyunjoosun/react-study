@@ -1,7 +1,9 @@
+"use client";
 import { useEffect, useState, useCallback } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 
+// @review react-hook-form를 사용해서 효과적으로 관리할 필요가 있음
 export function useBoardEdit() {
   const router = useRouter();
   const params = useParams();
@@ -40,13 +42,16 @@ export function useBoardEdit() {
     fetchPost();
   }, [id]);
 
-  const handleThumbnailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setNewThumbnailFile(file);
-      setThumbnail(URL.createObjectURL(file));
-    }
-  }, []);
+  const handleThumbnailChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (file) {
+        setNewThumbnailFile(file);
+        setThumbnail(URL.createObjectURL(file));
+      }
+    },
+    []
+  );
 
   const handleThumbnailDelete = useCallback(() => {
     setNewThumbnailFile(null);

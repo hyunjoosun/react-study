@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 
 export function middleware(req: NextRequest) {
   const authUser = req.cookies.get("authUser")?.value;
+  // @review: users 에 대한 패치 관리가 없음
   const protectedPaths = ["/board", "/mypage", "/admin"];
 
   if (protectedPaths.some((path) => req.nextUrl.pathname.startsWith(path))) {
