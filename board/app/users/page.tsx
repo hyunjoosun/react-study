@@ -1,6 +1,5 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
 import {
   Container,
   Typography,
@@ -19,89 +18,55 @@ import {
 } from "@mui/material";
 import { Search as SearchIcon, Close as CloseIcon } from "@mui/icons-material";
 import { format } from "date-fns";
-import { supabase } from "@/lib/supabaseClient";
+import { useState } from "react";
+import { useUsers } from "../hook/users";
 import { UserProfile } from "../types";
 
-const ITEMS_PER_PAGE = 10;
-
 export default function UsersPage() {
-  const [users, setUsers] = useState<UserProfile[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<UserProfile[]>([]);
+  const {
+    filteredUsers,
+    loading,
+    error,
+    searchInput,
+    setSearchInput,
+    handleSearch,
+    page,
+    setPage,
+    totalPages,
+  } = useUsers();
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
-  const [searchInput, setSearchInput] = useState<string>("");
-  const [page, setPage] = useState<number>(1);
-
-  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
-  const currentPageUsers = filteredUsers.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE
-  );
-
-  useEffect(() => {
-    fetchUsers();
-  }, []);
-
-  const fetchUsers = async () => {
-    const { data, error } = await supabase.from("profiles").select("*");
-
-    if (error) {
-      console.error("유저 정보 불러오기 실패:", error);
-      return;
-    }
-
-    const usersWithCounts = await Promise.all(
-      data.map(async (user) => {
-        const [{ count: postCount }, { count: commentCount }] =
-          await Promise.all([
-            supabase
-              .from("posts")
-              .select("*", { count: "exact", head: true })
-              .eq("author_id", user.id),
-            supabase
-              .from("comments")
-              .select("*", { count: "exact", head: true })
-              .eq("author_id", user.id),
-          ]);
-
-        return {
-          ...user,
-          post_count: postCount || 0,
-          comment_count: commentCount || 0,
-        };
-      })
-    );
-
-    setUsers(usersWithCounts);
-    setFilteredUsers(usersWithCounts);
-  };
-
-  const handleUserClick = (user: UserProfile) => {
-    setSelectedUser(user);
-  };
-
-  const handleClose = () => {
-    setSelectedUser(null);
-  };
-
-  const handleSearch = () => {
-    const lowercasedInput = searchInput.toLowerCase();
-    const filtered = users.filter((user) => {
-      const name = user.name?.toLowerCase() || "";
-      const username = user.username?.toLowerCase() || "";
-
-      return (
-        name.includes(lowercasedInput) || username.includes(lowercasedInput)
-      );
-    });
-    setFilteredUsers(filtered);
-    setPage(1);
-  };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       handleSearch();
     }
   };
+
+  const handleClose = () => {
+    setSelectedUser(null);
+  };
+
+  const handleUserClick = (user: UserProfile) => {
+    setSelectedUser(user);
+  };
+
+  if (loading) {
+    return (
+      <Container sx={{ mt: 4 }}>
+        <Typography variant="h6">사용자 정보를 불러오는 중입니다...</Typography>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container sx={{ mt: 4 }}>
+        <Typography variant="h6" color="error">
+          사용자 정보를 불러오는데 실패했습니다.
+        </Typography>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
@@ -159,7 +124,7 @@ export default function UsersPage() {
         </Box>
 
         <Box>
-          {currentPageUsers.map((user) => (
+          {filteredUsers.map((user) => (
             <Box key={user.id}>
               <Box
                 sx={{

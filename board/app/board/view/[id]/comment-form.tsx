@@ -1,5 +1,3 @@
-"use client";
-
 import { Box, Button, TextField } from "@mui/material";
 import { useCommentForm } from "../../../hook/boardView";
 

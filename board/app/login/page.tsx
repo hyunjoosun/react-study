@@ -95,7 +95,7 @@ export default function Login() {
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
-                          onClick={() => setShowPassword((prev) => !prev)}
+                          onClick={setShowPassword}
                           edge="end"
                           tabIndex={-1}
                         >

@@ -9,23 +9,6 @@ export type FormValues = {
   password: string;
 };
 
-interface PostProps {
-  id: number;
-  title: string;
-  content: string;
-  thumbnail?: string;
-  category?: string;
-  created_at: string;
-  view_count: number;
-  comment_count: number;
-  like_count: number;
-  author_id: string;
-  profiles: {
-    username: string;
-    name: string;
-  };
-}
-
 // 게시판 리스트
 export const useBoardList = () => {
   const [page, setPage] = useState<number>(1);

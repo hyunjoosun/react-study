@@ -4,26 +4,24 @@ import { Box, Button, Typography, IconButton } from "@mui/material";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import PeopleIcon from "@mui/icons-material/People";
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 
 export default function BoardTop() {
   const router = useRouter();
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const [userProfile, setUserProfile] = useState<any>(null);
 
   useEffect(() => {
     const storedProfile = sessionStorage.getItem("userProfile");
     if (storedProfile) {
       const profile = JSON.parse(storedProfile);
-      setUserProfile(profile);
       setIsAdmin(profile.email === "admin@example.com");
     }
   }, []);
 
   const handleLogout = () => {
     sessionStorage.removeItem("userProfile");
-    document.cookie = "authUser=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    document.cookie =
+      "authUser=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
     router.push("/login");
   };
 

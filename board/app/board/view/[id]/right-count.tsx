@@ -1,5 +1,3 @@
-"use client";
-
 import { Box, Stack, Typography, IconButton } from "@mui/material";
 import {
   Visibility as VisibilityIcon,
@@ -17,10 +15,7 @@ interface RightCountProps {
   commentCount: number;
 }
 
-export default function RightCount({
-  post,
-  commentCount,
-}: RightCountProps) {
+export default function RightCount({ post, commentCount }: RightCountProps) {
   const { likeCount, liked, toggleLike } = usePostLike(
     post.id,
     post.like_count

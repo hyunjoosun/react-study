@@ -12,21 +12,30 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { useState } from "react";
 import { Controller } from "react-hook-form";
 import { useBoardWrite } from "../../hook/boardWrite";
 
 const categories = ["공지사항", "정보", "일반", "질문"];
 
 export default function WritePage() {
-  const {
-    control,
-    handleSubmit,
-    onSubmit,
-    errors,
-    handleFileChange,
-    preview,
-    setPreview,
-  } = useBoardWrite();
+  const { control, handleSubmit, onSubmit, errors } = useBoardWrite();
+  const [preview, setPreview] = useState<string | null>(null);
+
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    onChange: (value: FileList | null) => void
+  ) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      onChange(e.target.files);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>

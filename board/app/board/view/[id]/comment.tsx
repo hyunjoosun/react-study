@@ -1,5 +1,3 @@
-"use client";
-
 import { Box, Divider, Typography } from "@mui/material";
 import CommentList from "./comment-list";
 import CommentForm from "./comment-form";
