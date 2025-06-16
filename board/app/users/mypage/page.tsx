@@ -29,6 +29,7 @@ export default function MyPage() {
   if (loading)
     return <Typography sx={{ mt: 4, textAlign: "center" }}>로딩중</Typography>;
 
+  // @review 미들웨어에서 해당 회원 없으면 자동으로 login 페이지로 보내고있음
   if (!userProfile)
     return (
       <Typography sx={{ mt: 4, textAlign: "center" }}>
@@ -115,6 +116,7 @@ export default function MyPage() {
           </Box>
         </Box>
 
+        {/* @review 로그인 세션에 포스트 카운트나 코멘트 카운트는 존재하지 않아서 해당기능 슈퍼베이스에서 가져오는 코드 필요 */}
         <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
           <Paper sx={{ p: 2, flex: 1, textAlign: "center" }}>
             <Typography variant="h6">{userProfile.post_count || 0}</Typography>

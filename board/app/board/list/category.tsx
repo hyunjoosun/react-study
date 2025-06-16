@@ -49,6 +49,7 @@ export default function Category({
     if (event.key === "Enter") handleSearch();
   };
 
+  // @review handleSearchClick 함수는 handleSearch를 호출하는 역할만 하므로, 직접 handleSearch를 사용하는게 더 간단할듯
   const handleSearchClick = () => handleSearch();
 
   return (

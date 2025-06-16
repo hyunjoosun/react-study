@@ -180,6 +180,7 @@ export default function UsersPage() {
       </Paper>
 
       {/* 사용자 상세 정보 모달 */}
+      {/* @review 해당 모달은 컴포넌트 분리하는게 나아보임 */}
       <Dialog
         open={!!selectedUser}
         onClose={handleClose}

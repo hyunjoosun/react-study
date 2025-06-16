@@ -18,6 +18,7 @@ import BoardTop from "../../board-top";
 import RightCount from "./right-count";
 import { useBoardView } from "../../../hook/boardView";
 
+// @review 컴포넌트 분리 필요 혼자 너무 많은 기능을 하고있음
 export default function PostDetailPage() {
   const { id } = useParams();
   const numId = Number(id);
@@ -63,10 +64,7 @@ export default function PostDetailPage() {
               {new Date(post.created_at).toLocaleDateString()}
             </Typography>
 
-            <RightCount
-              post={post}
-              commentCount={commentCount}
-            />
+            <RightCount post={post} commentCount={commentCount} />
           </Box>
         </Box>
 
