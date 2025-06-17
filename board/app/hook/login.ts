@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { supabase } from "@/lib/supabaseClient";
 import { LoginForm } from "../types";
-import { hashPassword } from "./hash";
+import { hashPassword } from "../utils/hash";
 
 export const useLogin = () => {
   const router = useRouter();
