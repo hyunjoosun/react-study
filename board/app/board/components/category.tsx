@@ -9,7 +9,7 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import { Search as SearchIcon } from "@mui/icons-material";
-import { useCategory } from "../../hook/boardList";
+import { useCategory } from "../../hook/boardCategory";
 
 interface CategoryProps {
   category: string;

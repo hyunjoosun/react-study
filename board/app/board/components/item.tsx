@@ -14,7 +14,7 @@ import {
   Favorite as FavoriteIcon,
 } from "@mui/icons-material";
 import { format } from "date-fns";
-import { useBoardItem } from "../../hook/boardList";
+import { useBoardItem } from "../../hook/boardItem";
 
 interface ItemsProps {
   category: string;
