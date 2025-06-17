@@ -3,12 +3,21 @@ import type { NextRequest } from "next/server";
 
 export function middleware(req: NextRequest) {
   const authUser = req.cookies.get("authUser")?.value;
+  const pathname = req.nextUrl.pathname;
+
   const protectedPaths = ["/board", "/mypage", "/admin"];
 
-  if (protectedPaths.some((path) => req.nextUrl.pathname.startsWith(path))) {
+  if (pathname === "/") {
+    if (authUser) {
+      return NextResponse.redirect(new URL("/board", req.url));
+    } else {
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+  }
+
+  if (protectedPaths.some((path) => pathname.startsWith(path))) {
     if (!authUser) {
-      const loginUrl = new URL("/login", req.url);
-      return NextResponse.redirect(loginUrl);
+      return NextResponse.redirect(new URL("/login", req.url));
     }
   }
 
@@ -16,5 +25,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/board/:path*", "/mypage/:path*", "/admin/:path*"],
+  matcher: ["/", "/board/:path*", "/mypage/:path*", "/admin/:path*"],
 };

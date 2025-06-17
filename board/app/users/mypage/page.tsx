@@ -26,15 +26,13 @@ export default function MyPage() {
     handleSaveUsername,
   } = useMypage();
 
-  if (loading)
-    return <Typography sx={{ mt: 4, textAlign: "center" }}>로딩중</Typography>;
+  if (loading) {
+    return <Typography>로딩중...</Typography>;
+  }
 
-  if (!userProfile)
-    return (
-      <Typography sx={{ mt: 4, textAlign: "center" }}>
-        사용자 정보를 불러올 수 없습니다.
-      </Typography>
-    );
+  if (!userProfile) {
+    return <Typography>사용자 정보를 불러올 수 없습니다.</Typography>;
+  }
 
   return (
     <Container maxWidth="sm" sx={{ mt: 4 }}>
